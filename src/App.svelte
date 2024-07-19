@@ -1,5 +1,21 @@
 <script lang="ts">
   import Counter from './lib/Counter.svelte'
+  import {solver} from './lib/solver' // use export default to remove need for {}
+  import convertToNotation from './lib/notation'
+  let s = new solver("")
+  let out = "" // Output from solver, reassignments automatically trigger UI updates
+  let not = "" // Temp placeholder for notation
+  let dimacs_input = // DIMACS input from UI (automatically updated when text input changes)
+  `c simple_v3_c2.cnf
+p cnf 3 2
+1 -3 0
+2 3 -1 0`
+  function parse(){
+    s = new solver(dimacs_input)
+    s.parse()
+    out = s.clauses.toString()
+    not = convertToNotation(s.clauses)
+  }
 </script>
 <header></header>
 <main>
@@ -14,8 +30,8 @@
       </div>
       <div style="border: 5px solid green;">
         <div id="left-mid">
-          <div style="border: 2px solid yellow;"><h3>DIMACS CNF Input:</h3><textarea style="width: 95%;height: 65%;"></textarea></div>
-          <div style="border: 2px solid blue;"><h3>SAT instance in mathematical notation:</h3><div style="width: 95%;height: 65%;border: 2px solid black;"></div></div>
+          <div style="border: 2px solid yellow;"><h3>DIMACS CNF Input:</h3><textarea style="width: 95%;height: 65%;" bind:value={dimacs_input}></textarea></div>
+          <div style="border: 2px solid blue;"><h3>SAT instance in mathematical notation:</h3><div style="width: 95%;height: 65%;border: 2px solid black;"><textarea class="output-box" readonly value="{not}" /></div></div>
         </div>
       </div>
       <div style="border: 5px solid blue;"></div>
@@ -28,10 +44,13 @@
           <div style="text-align: right;"><a href="https://example.com" target="_blank" rel="noreferrer">User instruction manual</a></div>
         </div>
         <div class="output-box-container" style="background-color: aqua;">
-          <textarea class="output-box" id="sat-log" readonly value="tbc" />                    
+          <textarea class="output-box" id="sat-log" readonly value="{out}" />                    
         </div>
         <div>
           <Counter /><Counter />
+          <button on:click={parse}>
+            parse
+          </button>
           <h3>Learnt Clauses</h3>
         </div>
         <div class="output-box-container" style="background-color: red;">
