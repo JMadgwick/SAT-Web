@@ -1,6 +1,11 @@
+//TODO If implementing more than one algorithm, then make this a parent class
 export class solver {
     private dimacs: string
     public clauses: number[][] = []
+    private processedClauses: number[][] = []
+    private variableAssignments: [number, boolean][] = []
+    private backtrack = false
+    private complete = false
 
     public constructor(dimacs: string) {
         this.dimacs = dimacs
@@ -40,9 +45,112 @@ export class solver {
             }
         }
         this.clauses = clauseList
+        this.setup()
     }
 
-    protected solve(){}
+    private setup() {
+        this.processedClauses = this.clauses
+    }
 
-    public solveOneStep(){}
+    public getAssignments(){
+        // Returns only variables which are assigned. When solved some might not have been assigned, they can take either value without impacting the solution
+        // This can be improved on to find unassigned varibles and highlight these or return multiple sets of results
+        return this.variableAssignments
+    }
+    
+    //when backjumping need to regenerate the processed clauses, to undo removals
+    public solveOneStep(){
+        //TODO move out to another method to call this one, can be just in parent class
+        if (this.complete) {
+            return ""
+        }
+        let logText = ""
+        let nextProcessedClauses: number[][] = []
+        let variable: number
+        let lit: number
+        let varBool: boolean
+
+        if (!this.backtrack) {
+            // Take next available variable
+            variable = Math.abs(this.processedClauses[0][0])
+            lit = variable
+            varBool = true
+        } else {
+            let previousVariableA = this.variableAssignments.pop()//TODO ensure a check so that variable cannot be undefined, couldn't really happen
+            // console.log(`Popped previous variable=${previousVariableA}`)
+            if (previousVariableA![1] == false) { // If already backtracked then it will be false, in this case need to remove prior assignments until one can be tried with false
+                console.log(`This is false, so going up`)
+                for (let i = this.variableAssignments.length-1; i >= 0; i--) {
+                    console.log(`Checking variable=${this.variableAssignments[i]}`)
+                    if (this.variableAssignments[i][1] == true) { //use this
+                        console.log(`Using variable=${this.variableAssignments[i]}`)
+                        previousVariableA = this.variableAssignments[i]
+                        break
+                    } else {this.variableAssignments.pop()}//remove it
+                }
+                if (this.variableAssignments.length == 0) { // If variableAssignments is empty then we are at root node and cannot backtrack - can set failed flag and end
+                    this.complete = true
+                    return "failde"//failed
+                } else { //then regenerate the processed clauses and continue
+                    this.variableAssignments.pop()// remove the prior assignment
+                    console.log(`Assignments prior to regen=${this.variableAssignments}`)
+                    this.regenerateProcessedClauses()
+                }
+            }
+            variable = previousVariableA![0]
+            lit = 0-variable
+            varBool = false
+        }
+
+        let negLit = 0-lit
+        logText = `Assigning ${varBool} to ${variable}`
+        this.variableAssignments.push([variable, varBool])
+        logText = logText + "\nAll assignments: "+this.variableAssignments
+
+        // Remove this literal from clauses
+        for (let clause of this.processedClauses) {
+            if (!clause.includes(lit)) { // If it doesn't include this literal (if it does then eliminated)
+                let newClause = clause.filter((clit) => clit != negLit) // Remove negated version of the variable
+                if (newClause.length == 0) { // Check if the clause is now empty
+                    logText = logText + `\nRemoving ${negLit} causes an empty clause, trying to backtrack`
+                    this.backtrack = true // Set flag to backtrack on next step
+                    return logText
+                }
+                nextProcessedClauses.push(newClause) // Add to processed list
+            }
+        }
+        this.backtrack = false //reset backtrack
+        
+        this.processedClauses = nextProcessedClauses
+        if (this.processedClauses.length == 0) {
+            this.complete = true
+            return logText + "\nSolved"
+        }
+        logText = logText + `\nClauses: ${nextProcessedClauses}, count: ${nextProcessedClauses.length}`
+        return logText
+    }
+
+    private regenerateProcessedClauses() {
+        this.setup() // Reset existing clause list
+        // Recreate using current assignments
+        for (let variable of this.variableAssignments) {
+            let nextProcessedClauses: number[][] = []
+            let lit = (variable[1] == true) ? variable[0] : 0-variable[0]
+            let negLit = 0-lit
+            console.log(`Eliminate ${lit} and ${negLit}`)
+            for (let clause of this.processedClauses) {
+                console.log(`Examine ${clause}`)
+                if (!clause.includes(lit)) { // If it doesn't include this literal (if it does then eliminated)
+                    let newClause = clause.filter((clit) => clit != negLit) // Remove negated version of the variable
+                    if (newClause.length == 0) { // Check if the clause is now empty
+                        //This shouldn't ever happen
+                    }
+                    console.log(`Replaced with ${newClause}`)
+                    nextProcessedClauses.push(newClause) // Add to processed list
+                } else {console.log(`eliminated`)}
+            }
+            this.processedClauses = nextProcessedClauses
+        }
+        console.log(`Eliminate Done`)
+    }
 }

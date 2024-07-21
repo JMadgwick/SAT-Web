@@ -10,3 +10,4 @@ export default function convertToNotation(clauses: number[][]):string {
     }
     return notation.slice(0, -6)
 }
+//TODO ability to colour in red or strikethrough clauses and variables that have been eliminated

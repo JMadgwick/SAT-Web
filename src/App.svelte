@@ -8,13 +8,17 @@
   let dimacs_input = // DIMACS input from UI (automatically updated when text input changes)
   `c simple_v3_c2.cnf
 p cnf 3 2
-1 -3 0
-2 3 -1 0`
+-1 -3 0
+2 3 -1 0
+3 -1 0`//ex5 is good
   function parse(){
     s = new solver(dimacs_input)
     s.parse()
-    out = s.clauses.toString()
+    // out = s.clauses.toString()
     not = convertToNotation(s.clauses)
+  }
+  function sstep(){
+    out = out + s.solveOneStep() + "\n"
   }
 </script>
 <header></header>
@@ -48,9 +52,8 @@ p cnf 3 2
         </div>
         <div>
           <Counter /><Counter />
-          <button on:click={parse}>
-            parse
-          </button>
+          <button on:click={parse}>parse</button>
+          <button on:click={sstep}>solve step</button>
           <h3>Learnt Clauses</h3>
         </div>
         <div class="output-box-container" style="background-color: red;">
