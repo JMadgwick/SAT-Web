@@ -1,4 +1,5 @@
 //TODO If implementing more than one algorithm, then make this a parent class
+export type eventType = {type:string,var?:number,val?:boolean}//|{type:string,var?:undefined,val?: undefined}
 export class solver {
     private dimacs: string
     public clauses: number[][] = []
@@ -6,6 +7,7 @@ export class solver {
     private variableAssignments: [number, boolean][] = []
     private backtrack = false
     private complete = false
+    private events:eventType[] = []
 
     public constructor(dimacs: string) {
         this.dimacs = dimacs
@@ -58,17 +60,27 @@ export class solver {
         return this.variableAssignments
     }
     
-    //when backjumping need to regenerate the processed clauses, to undo removals
-    public solveOneStep(){
+    // In future split this out into separate methods to: 1 run a step with no events, 2 a step with step results, 3 step will all results so far
+    public solveStep(): eventType[] {
+        let stepResult = this.solveOneStep()
+        if (stepResult != undefined) {
+            this.events = this.events.concat(stepResult)
+        }
+        return this.events
+    }
+
+    private solveOneStep(){
         //TODO move out to another method to call this one, can be just in parent class
         if (this.complete) {
-            return ""
+            return
         }
         let logText = ""
         let nextProcessedClauses: number[][] = []
         let variable: number
         let lit: number
         let varBool: boolean
+
+        let events:eventType[] = []
 
         if (!this.backtrack) {
             // Take next available variable
@@ -77,23 +89,23 @@ export class solver {
             varBool = true
         } else {
             let previousVariableA = this.variableAssignments.pop()//TODO ensure a check so that variable cannot be undefined, couldn't really happen
-            // console.log(`Popped previous variable=${previousVariableA}`)
+            //events.push({type: "backtrack"})// console.log(`Popped previous variable=${previousVariableA}`)
             if (previousVariableA![1] == false) { // If already backtracked then it will be false, in this case need to remove prior assignments until one can be tried with false
-                console.log(`This is false, so going up`)
+                // console.log(`This is false, so going up`)
                 for (let i = this.variableAssignments.length-1; i >= 0; i--) {
-                    console.log(`Checking variable=${this.variableAssignments[i]}`)
+                    events.push({ type: "backtrack" })// console.log(`Checking variable=${this.variableAssignments[i]}`)
                     if (this.variableAssignments[i][1] == true) { //use this
-                        console.log(`Using variable=${this.variableAssignments[i]}`)
+                        // console.log(`Using variable=${this.variableAssignments[i]}`)
                         previousVariableA = this.variableAssignments[i]
                         break
                     } else {this.variableAssignments.pop()}//remove it
                 }
                 if (this.variableAssignments.length == 0) { // If variableAssignments is empty then we are at root node and cannot backtrack - can set failed flag and end
                     this.complete = true
-                    return "failde"//failed
+                    return //failed
                 } else { //then regenerate the processed clauses and continue
                     this.variableAssignments.pop()// remove the prior assignment
-                    console.log(`Assignments prior to regen=${this.variableAssignments}`)
+                    // console.log(`Assignments prior to regen=${this.variableAssignments}`)
                     this.regenerateProcessedClauses()
                 }
             }
@@ -104,6 +116,7 @@ export class solver {
 
         let negLit = 0-lit
         logText = `Assigning ${varBool} to ${variable}`
+        events.push({ type: "assign", var: variable, val: varBool })
         this.variableAssignments.push([variable, varBool])
         logText = logText + "\nAll assignments: "+this.variableAssignments
 
@@ -112,9 +125,10 @@ export class solver {
             if (!clause.includes(lit)) { // If it doesn't include this literal (if it does then eliminated)
                 let newClause = clause.filter((clit) => clit != negLit) // Remove negated version of the variable
                 if (newClause.length == 0) { // Check if the clause is now empty
-                    logText = logText + `\nRemoving ${negLit} causes an empty clause, trying to backtrack`
+                    logText = logText + `\nRemoving ${negLit} causes an empty clause, will try to backtrack`
                     this.backtrack = true // Set flag to backtrack on next step
-                    return logText
+                    events.push({ type: "failure" })
+                    return events//logText
                 }
                 nextProcessedClauses.push(newClause) // Add to processed list
             }
@@ -124,10 +138,11 @@ export class solver {
         this.processedClauses = nextProcessedClauses
         if (this.processedClauses.length == 0) {
             this.complete = true
-            return logText + "\nSolved"
+            events.push({ type: "solved" })
+            return events//logText + "\nSolved"
         }
         logText = logText + `\nClauses: ${nextProcessedClauses}, count: ${nextProcessedClauses.length}`
-        return logText
+        return events//logText
     }
 
     private regenerateProcessedClauses() {
@@ -151,6 +166,6 @@ export class solver {
             }
             this.processedClauses = nextProcessedClauses
         }
-        console.log(`Eliminate Done`)
+        // console.log(`Eliminate Done`)
     }
 }

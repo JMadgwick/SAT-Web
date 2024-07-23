@@ -1,10 +1,15 @@
 <script lang="ts">
   import Counter from './lib/Counter.svelte'
+  import SearchGraph from './lib/SearchGraph.svelte'
+  import {process} from './lib/searchGraph'
+  import cytoscape from 'cytoscape'
   import {solver} from './lib/solver' // use export default to remove need for {}
   import convertToNotation from './lib/notation'
   let s = new solver("")
   let out = "" // Output from solver, reassignments automatically trigger UI updates
   let not = "" // Temp placeholder for notation
+  let test = "" //placehodler testing search tree
+  let tt:cytoscape.ElementDefinition[]
   let dimacs_input = // DIMACS input from UI (automatically updated when text input changes)
   `c simple_v3_c2.cnf
 p cnf 3 2
@@ -18,7 +23,10 @@ p cnf 3 2
     not = convertToNotation(s.clauses)
   }
   function sstep(){
-    out = out + s.solveOneStep() + "\n"
+    let res = s.solveStep()
+    out = JSON.stringify(res)
+    tt = process(res)
+    test = JSON.stringify(tt)
   }
 </script>
 <header></header>
@@ -38,7 +46,9 @@ p cnf 3 2
           <div style="border: 2px solid blue;"><h3>SAT instance in mathematical notation:</h3><div style="width: 95%;height: 65%;border: 2px solid black;"><textarea class="output-box" readonly value="{not}" /></div></div>
         </div>
       </div>
-      <div style="border: 5px solid blue;"></div>
+      <div style="border: 5px solid blue;">
+        <SearchGraph elements={tt}></SearchGraph>
+      </div>
     </div>
     <!-- Right Hand Side -->
     <div>
@@ -57,7 +67,7 @@ p cnf 3 2
           <h3>Learnt Clauses</h3>
         </div>
         <div class="output-box-container" style="background-color: red;">
-          <textarea class="output-box" id="learnt-clauses" readonly value="tbc" />
+          <textarea class="output-box" id="learnt-clauses" readonly value="{test}" />
         </div>
       </div>
     </div>
