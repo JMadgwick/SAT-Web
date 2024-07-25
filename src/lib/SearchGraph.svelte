@@ -1,20 +1,12 @@
 <script lang="ts">
     import cytoscape from 'cytoscape'
+    import dagre from 'cytoscape-dagre'
+    cytoscape.use( dagre );
     let cy: cytoscape.Core
 
-    // let testData = [{"data":{"id":"100","lab":"1"}},{"data":{"source":"100","target":"101","lab":"true"}},{"data":{"id":"101","lab":"2"}},{"data":{"source":"101","target":"102","lab":"true"}},{"data":{"id":"102","lab":"fail"}},{"data":{"source":"101","target":"104","lab":"false"}},{"data":{"id":"104","lab":"fail"}},{"data":{"source":"100","target":"106","lab":"false"}},{"data":{"id":"106","lab":"solved"}}]
     export let elements:cytoscape.ElementDefinition[]
 
-    function setBgColor(ele:cytoscape.NodeSingular):string {
-        switch (ele.data('lab')) {
-            case "solved":
-                return 'green'
-            case "fail":
-                return 'red'
-            default:
-                return '#666'
-        }
-    }
+    // Add an option to shown text with a button in the UI
     function updateGraph(elements:cytoscape.ElementDefinition[]){
         cy = cytoscape({
             container: document.getElementById('cy'), // container to render in
@@ -25,27 +17,64 @@
             {
                 selector: 'node',
                 style: {
-                'background-color': setBgColor,
+                // 'label': 'data(lab)',
+                'text-valign': 'center'
+                }
+            },
+
+            {
+                selector: '.var',
+                style: {
+                'background-opacity': 0,
+                'border-color': 'black',
+                'border-width': 1,
                 'label': 'data(lab)'
+                }
+            },
+
+            {
+                selector: '.fail',
+                style: {
+                'background-color': 'red'
+                }
+            },
+
+            {
+                selector: '.solved',
+                style: {
+                'background-color': 'green'
                 }
             },
 
             {
                 selector: 'edge',
                 style: {
-                'label': 'data(lab)',
+                // 'label': 'data(lab)',
                 'width': 3,
-                'line-color': '#ccc',
-                'target-arrow-color': '#ccc',
                 'target-arrow-shape': 'triangle',
                 'curve-style': 'bezier'
+                }
+            },
+
+            {
+                selector: '.true',
+                style: {
+                'line-color': 'green',
+                'target-arrow-color': 'green'
+                }
+            },
+
+            {
+                selector: '.false',
+                style: {
+                'line-color': 'red',
+                'target-arrow-color': 'red'
                 }
             }
             ],
 
             layout: {
-            name: 'grid',
-            rows: 3
+            name: 'dagre'
             }
         })
     }
@@ -74,8 +103,8 @@
 <style>
     #cy {
         /* Putting 100% causes the size to expand and fill everything */
-        width: 35em;
-        height: 20em;
+        width: 45em;
+        height: 35em;
         margin: 0.5em;
         border: 3px solid black;
     }
