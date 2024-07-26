@@ -1,5 +1,5 @@
 //TODO If implementing more than one algorithm, then make this a parent class
-export type eventType = {type:string,var?:number,val?:boolean}//|{type:string,var?:undefined,val?: undefined}
+export type eventType = {type:string,var?:number,val?:boolean}
 export class solver {
     private dimacs: string
     public clauses: number[][] = []
@@ -8,6 +8,8 @@ export class solver {
     private backtrack = false
     private complete = false
     private events:eventType[] = []
+
+    //TODO - Add statistics such as number of steps, backtracks etc.
 
     public constructor(dimacs: string) {
         this.dimacs = dimacs
@@ -31,19 +33,16 @@ export class solver {
             if (cnfInput[i].match(new RegExp('\\s'))) { // Whitespace signifies boundary between literals or clause terminating 0
                 if (buffer != "") { // If buffer contains a literal
                     literal = Number(buffer) //TODO if this is zero then bad input of "00" or if NaN then other invalid input
-                    // console.log(`Adding literal ${literal} to clause`)
                     clause.push(literal) // Add literal to clause
                     buffer = ""
                 }
                 if (cnfInput[i+1] == '0') { // Reached end of clause
-                    // console.log(`Adding clause: ${clause}`)
                     clauseList.push(clause)//TODO in microsat an empty clause is checked here and also single literal clause is assigned/checked
                     clause = []
                     i++
                 }
             } else {
                 buffer = buffer + cnfInput[i]
-                // console.log(`Adding ${cnfInput[i]} to buffer. buffer=${buffer}`)
             }
         }
         this.clauses = clauseList
@@ -54,26 +53,33 @@ export class solver {
         this.processedClauses = this.clauses
     }
 
+    public isSolvingFinished(){
+        return this.complete
+    }
+
     public getAssignments(){
         // Returns only variables which are assigned. When solved some might not have been assigned, they can take either value without impacting the solution
         // This can be improved on to find unassigned varibles and highlight these or return multiple sets of results
         return this.variableAssignments
     }
     
-    // In future split this out into separate methods to: 1 run a step with no events, 2 a step with step results, 3 step will all results so far
+    public getEvents(){
+        return this.events
+    }
+
+    // In future option to return incremental events?
     public solveStep(): eventType[] {
-        let stepResult = this.solveOneStep()
-        if (stepResult != undefined) {
-            this.events = this.events.concat(stepResult)
+        if (!this.complete) {
+            let stepResult = this.solveOneStep()
+            if (stepResult != undefined) {
+                this.events = this.events.concat(stepResult)
+            }
         }
         return this.events
     }
 
     private solveOneStep(){
         //TODO move out to another method to call this one, can be just in parent class
-        if (this.complete) {
-            return
-        }
         let logText = ""
         let nextProcessedClauses: number[][] = []
         let variable: number
@@ -89,13 +95,10 @@ export class solver {
             varBool = true
         } else {
             let previousVariableA = this.variableAssignments.pop()//TODO ensure a check so that variable cannot be undefined, couldn't really happen
-            //events.push({type: "backtrack"})// console.log(`Popped previous variable=${previousVariableA}`)
             if (previousVariableA![1] == false) { // If already backtracked then it will be false, in this case need to remove prior assignments until one can be tried with false
-                // console.log(`This is false, so going up`)
                 for (let i = this.variableAssignments.length-1; i >= 0; i--) {
-                    events.push({ type: "backtrack" })// console.log(`Checking variable=${this.variableAssignments[i]}`)
+                    events.push({ type: "backtrack" })
                     if (this.variableAssignments[i][1] == true) { //use this
-                        // console.log(`Using variable=${this.variableAssignments[i]}`)
                         previousVariableA = this.variableAssignments[i]
                         break
                     } else {this.variableAssignments.pop()}//remove it
@@ -105,7 +108,6 @@ export class solver {
                     return //failed
                 } else { //then regenerate the processed clauses and continue
                     this.variableAssignments.pop()// remove the prior assignment
-                    // console.log(`Assignments prior to regen=${this.variableAssignments}`)
                     this.regenerateProcessedClauses()
                 }
             }
@@ -128,7 +130,7 @@ export class solver {
                     logText = logText + `\nRemoving ${negLit} causes an empty clause, will try to backtrack`
                     this.backtrack = true // Set flag to backtrack on next step
                     events.push({ type: "failure" })
-                    return events//logText
+                    return events
                 }
                 nextProcessedClauses.push(newClause) // Add to processed list
             }
@@ -139,10 +141,10 @@ export class solver {
         if (this.processedClauses.length == 0) {
             this.complete = true
             events.push({ type: "solved" })
-            return events//logText + "\nSolved"
+            return events
         }
         logText = logText + `\nClauses: ${nextProcessedClauses}, count: ${nextProcessedClauses.length}`
-        return events//logText
+        return events
     }
 
     private regenerateProcessedClauses() {
@@ -152,20 +154,16 @@ export class solver {
             let nextProcessedClauses: number[][] = []
             let lit = (variable[1] == true) ? variable[0] : 0-variable[0]
             let negLit = 0-lit
-            console.log(`Eliminate ${lit} and ${negLit}`)
             for (let clause of this.processedClauses) {
-                console.log(`Examine ${clause}`)
                 if (!clause.includes(lit)) { // If it doesn't include this literal (if it does then eliminated)
                     let newClause = clause.filter((clit) => clit != negLit) // Remove negated version of the variable
                     if (newClause.length == 0) { // Check if the clause is now empty
                         //This shouldn't ever happen
                     }
-                    console.log(`Replaced with ${newClause}`)
                     nextProcessedClauses.push(newClause) // Add to processed list
-                } else {console.log(`eliminated`)}
+                } else {}
             }
             this.processedClauses = nextProcessedClauses
         }
-        // console.log(`Eliminate Done`)
     }
 }

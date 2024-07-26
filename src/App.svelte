@@ -1,32 +1,48 @@
 <script lang="ts">
   import Counter from './lib/Counter.svelte'
   import SearchGraph from './lib/SearchGraph.svelte'
+  import SATLog from './lib/log'
   import {process} from './lib/searchGraph'
   import cytoscape from 'cytoscape'
-  import {solver} from './lib/solver' // use export default to remove need for {}
+  import {solver as basicSolver} from './lib/solver' // use export default to remove need for {}
   import convertToNotation from './lib/notation'
-  let s = new solver("")
-  let out = "" // Output from solver, reassignments automatically trigger UI updates
+  let solver = new basicSolver("")
+  let solverEventLog = "" // Output log for solver, reassignments automatically trigger UI updates
   let not = "" // Temp placeholder for notation
   let test = "" //placehodler testing search tree
-  let tt:cytoscape.ElementDefinition[]
+  let searchGraphElements:cytoscape.ElementDefinition[] // Search Graph Cytoscape elements
   let dimacs_input = // DIMACS input from UI (automatically updated when text input changes)
   `c simple_v3_c2.cnf
 p cnf 3 2
 -1 -3 0
 2 3 -1 0
 3 -1 0`//ex5 is good
-  function parse(){
-    s = new solver(dimacs_input)
-    s.parse()
-    // out = s.clauses.toString()
-    not = convertToNotation(s.clauses)
+  function parseDIMACS(){
+    solver = new basicSolver(dimacs_input)
+    solver.parse()
+    not = convertToNotation(solver.clauses)
   }
-  function sstep(){
-    let res = s.solveStep()
-    out = JSON.stringify(res)
-    tt = process(res)
-    test = JSON.stringify(tt)
+
+  function solveStep(){
+    if (!solver.isSolvingFinished()) {
+      let events = solver.solveStep()
+      solverEventLog = SATLog(events)
+      searchGraphElements = process(events)
+      test = JSON.stringify(searchGraphElements)
+    }
+  }
+
+  function solveAll(){
+    let startTime = Date.now()
+    while (!solver.isSolvingFinished()) {
+      solver.solveStep()
+    }
+    let events = solver.getEvents()
+    solverEventLog = SATLog(events)
+    searchGraphElements = process(events)
+    test = JSON.stringify(searchGraphElements)
+    let endTime = Date.now()
+    console.log((endTime - startTime)/1000)
   }
 </script>
 <header></header>
@@ -47,7 +63,7 @@ p cnf 3 2
         </div>
       </div>
       <div style="border: 5px solid blue;">
-        <SearchGraph elements={tt}></SearchGraph>
+        <SearchGraph elements={searchGraphElements}></SearchGraph>
       </div>
     </div>
     <!-- Right Hand Side -->
@@ -58,12 +74,12 @@ p cnf 3 2
           <div style="text-align: right;"><a href="https://example.com" target="_blank" rel="noreferrer">User instruction manual</a></div>
         </div>
         <div class="output-box-container" style="background-color: aqua;">
-          <textarea class="output-box" id="sat-log" readonly value="{out}" />                    
+          <textarea class="output-box" id="sat-log" readonly value="{solverEventLog}" />                    
         </div>
         <div>
-          <Counter /><Counter />
-          <button on:click={parse}>parse</button>
-          <button on:click={sstep}>solve step</button>
+          <button on:click={parseDIMACS}>Parse Input</button>
+          <button on:click={solveStep}>Solve (Single Step)</button>
+          <button on:click={solveAll}>Solve All</button>
           <h3>Learnt Clauses</h3>
         </div>
         <div class="output-box-container" style="background-color: red;">
