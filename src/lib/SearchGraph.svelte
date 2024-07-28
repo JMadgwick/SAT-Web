@@ -9,11 +9,11 @@
     // Add an option to shown text with a button in the UI
     function updateGraph(elements:cytoscape.ElementDefinition[]){
         cy = cytoscape({
-            container: document.getElementById('cy'), // container to render in
+            container: document.getElementById('cy-sg'),
 
             elements: elements,
 
-            style: [ // the stylesheet for the graph
+            style: [
             {
                 selector: 'node',
                 style: {
@@ -83,7 +83,7 @@
     // Cytoscape will otherwise be unable to find the element to use as it will not exist yet
     function onDOMUpdate(node: HTMLElement, elements:cytoscape.ElementDefinition[]) {
         // Called when the node has been mounted in the DOM
-        updateGraph(elements)
+        // updateGraph(elements)
 
 		return {
             // Called when the value has changed
@@ -98,13 +98,12 @@
     }
 </script>
 
-<div use:onDOMUpdate={elements} id="cy"></div>
+<div use:onDOMUpdate={elements} id="cy-sg"></div>
 
 <style>
-    #cy {
-        /* Putting 100% causes the size to expand and fill everything */
-        width: 45em;
-        height: 35em;
+    #cy-sg {
+        min-width: 90%;
+        min-height: 90%;
         margin: 0.5em;
         border: 3px solid black;
     }

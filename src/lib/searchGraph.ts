@@ -1,7 +1,7 @@
 import {type eventType} from "./solver"
 import cytoscape from 'cytoscape'
 
-export function process(events: eventType[]):cytoscape.ElementDefinition[] {
+export default function process(events: eventType[]):cytoscape.ElementDefinition[] {
     let assignmentTree: string[] = []
     let count = 100 //Used as a unique id for nodes
     let elements:cytoscape.ElementDefinition[] = []

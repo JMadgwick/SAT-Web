@@ -1,8 +1,10 @@
 <script lang="ts">
   import Counter from './lib/Counter.svelte'
   import SearchGraph from './lib/SearchGraph.svelte'
+  import VariableInteractionGraph from './lib/VariableInteractionGraph.svelte'
   import SATLog from './lib/log'
-  import {process} from './lib/searchGraph'
+  import eventsToSearchElements from './lib/searchGraph'
+  import clausesToInteractionElements from './lib/variableInteractionGraph'
   import cytoscape from 'cytoscape'
   import {solver as basicSolver} from './lib/solver' // use export default to remove need for {}
   import convertToNotation from './lib/notation'
@@ -11,24 +13,27 @@
   let not = "" // Temp placeholder for notation
   let test = "" //placehodler testing search tree
   let searchGraphElements:cytoscape.ElementDefinition[] // Search Graph Cytoscape elements
+  let variableInteractionElements:[Boolean, cytoscape.ElementDefinition[]] // Variable Interaction Graph Cytoscape elements
   let dimacs_input = // DIMACS input from UI (automatically updated when text input changes)
   `c simple_v3_c2.cnf
 p cnf 3 2
 -1 -3 0
 2 3 -1 0
-3 -1 0`//ex5 is good
+3 -1 0`//ex5 is good, NQueens10quad ok, NQueens15 times out
   function parseDIMACS(){
     solver = new basicSolver(dimacs_input)
     solver.parse()
     not = convertToNotation(solver.clauses)
+    variableInteractionElements = [true, clausesToInteractionElements(solver.clauses)]
   }
 
   function solveStep(){
     if (!solver.isSolvingFinished()) {
       let events = solver.solveStep()
       solverEventLog = SATLog(events)
-      searchGraphElements = process(events)
+      searchGraphElements = eventsToSearchElements(events)
       test = JSON.stringify(searchGraphElements)
+      variableInteractionElements = [false, clausesToInteractionElements(solver.processedClauses)]
     }
   }
 
@@ -39,7 +44,7 @@ p cnf 3 2
     }
     let events = solver.getEvents()
     solverEventLog = SATLog(events)
-    searchGraphElements = process(events)
+    searchGraphElements = eventsToSearchElements(events)
     test = JSON.stringify(searchGraphElements)
     let endTime = Date.now()
     console.log((endTime - startTime)/1000)
@@ -63,7 +68,10 @@ p cnf 3 2
         </div>
       </div>
       <div style="border: 5px solid blue;">
-        <SearchGraph elements={searchGraphElements}></SearchGraph>
+        <div id="left-bot">
+          <VariableInteractionGraph elements={variableInteractionElements}></VariableInteractionGraph>
+          <SearchGraph elements={searchGraphElements}></SearchGraph>
+        </div>
       </div>
     </div>
     <!-- Right Hand Side -->
@@ -144,6 +152,13 @@ p cnf 3 2
     display: grid;
     grid-template-columns: 3fr 5fr;
     border: 3px solid orchid;
+    height: 100%;
+    box-sizing: border-box;/* required for proper nesting */
+  }
+  #left-bot {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 3px solid lightseagreen;
     height: 100%;
     box-sizing: border-box;/* required for proper nesting */
   }

@@ -3,13 +3,14 @@ export type eventType = {type:string,var?:number,val?:boolean}
 export class solver {
     private dimacs: string
     public clauses: number[][] = []
-    private processedClauses: number[][] = []
+    public processedClauses: number[][] = []
     private variableAssignments: [number, boolean][] = []
     private backtrack = false
     private complete = false
     private events:eventType[] = []
 
     //TODO - Add statistics such as number of steps, backtracks etc.
+    //TODO - Add automatic abort timeout
 
     public constructor(dimacs: string) {
         this.dimacs = dimacs
