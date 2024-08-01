@@ -106,6 +106,7 @@ export class solver {
                 }
                 if (this.variableAssignments.length == 0) { // If variableAssignments is empty then we are at root node and cannot backtrack - can set failed flag and end
                     this.complete = true
+                    //TODO this needs an event for the log
                     return //failed
                 } else { //then regenerate the processed clauses and continue
                     this.variableAssignments.pop()// remove the prior assignment

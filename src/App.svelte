@@ -1,5 +1,7 @@
+<!-- TODO rand.cnf performance is poor - find cause by adding timer to each line of solveStep-->
 <script lang="ts">
   import Counter from './lib/Counter.svelte'
+  import Notation from './lib/Notation.svelte'
   import SearchGraph from './lib/SearchGraph.svelte'
   import VariableInteractionGraph from './lib/VariableInteractionGraph.svelte'
   import SATLog from './lib/log'
@@ -23,7 +25,7 @@ p cnf 3 2
   function parseDIMACS(){
     solver = new basicSolver(dimacs_input)
     solver.parse()
-    not = convertToNotation(solver.clauses)
+    not = convertToNotation(solver.clauses,solver.getAssignments())
     variableInteractionElements = [true, clausesToInteractionElements(solver.clauses)]
   }
 
@@ -33,6 +35,7 @@ p cnf 3 2
       solverEventLog = SATLog(events)
       searchGraphElements = eventsToSearchElements(events)
       test = JSON.stringify(searchGraphElements)
+      not = convertToNotation(solver.clauses,solver.getAssignments())
       variableInteractionElements = [false, clausesToInteractionElements(solver.processedClauses)]
     }
   }
@@ -64,7 +67,14 @@ p cnf 3 2
       <div style="border: 5px solid green;">
         <div id="left-mid">
           <div style="border: 2px solid yellow;"><h3>DIMACS CNF Input:</h3><textarea style="width: 95%;height: 65%;" bind:value={dimacs_input}></textarea></div>
-          <div style="border: 2px solid blue;"><h3>SAT instance in mathematical notation:</h3><div style="width: 95%;height: 65%;border: 2px solid black;"><textarea class="output-box" readonly value="{not}" /></div></div>
+          <div style="border: 2px solid blue;">
+            <h3>SAT instance in mathematical notation:</h3>
+            <div style="width: 95%;height: 65%;border: 2px solid black;overflow:auto">
+              <!-- <textarea class="output-box" readonly value="{not}" /> -->
+              <!-- <button>dropdown with options for original / current (all eliminations removed) / both</button> -->
+              <Notation htmText={not}></Notation>
+            </div>
+          </div>
         </div>
       </div>
       <div style="border: 5px solid blue;">
