@@ -1,4 +1,3 @@
-<!-- TODO rand.cnf performance is poor - find cause by adding timer to each line of solveStep-->
 <script lang="ts">
   import Counter from './lib/Counter.svelte'
   import Notation from './lib/Notation.svelte'
@@ -9,10 +8,10 @@
   import clausesToInteractionElements from './lib/variableInteractionGraph'
   import cytoscape from 'cytoscape'
   import {solver as basicSolver} from './lib/solver' // use export default to remove need for {}
-  import convertToNotation from './lib/notation'
   let solver = new basicSolver("")
   let solverEventLog = "" // Output log for solver, reassignments automatically trigger UI updates
-  let not = "" // Temp placeholder for notation
+  let clauses:number[][] = [] // For storing clauses, reassignments automatically trigger UI updates
+  let variableAssignments:Map<number, boolean> // For storing variable assignments
   let test = "" //placehodler testing search tree
   let searchGraphElements:cytoscape.ElementDefinition[] // Search Graph Cytoscape elements
   let variableInteractionElements:[Boolean, cytoscape.ElementDefinition[]] // Variable Interaction Graph Cytoscape elements
@@ -25,7 +24,8 @@ p cnf 3 2
   function parseDIMACS(){
     solver = new basicSolver(dimacs_input)
     solver.parse()
-    not = convertToNotation(solver.clauses,solver.getAssignments())
+    clauses = solver.clauses
+    variableAssignments = solver.getAssignments()
     variableInteractionElements = [true, clausesToInteractionElements(solver.clauses)]
   }
 
@@ -34,8 +34,8 @@ p cnf 3 2
       let events = solver.solveStep()
       solverEventLog = SATLog(events)
       searchGraphElements = eventsToSearchElements(events)
-      test = JSON.stringify(searchGraphElements)
-      not = convertToNotation(solver.clauses,solver.getAssignments())
+      clauses = solver.clauses
+      variableAssignments = solver.getAssignments()
       variableInteractionElements = [false, clausesToInteractionElements(solver.processedClauses)]
     }
   }
@@ -64,45 +64,39 @@ p cnf 3 2
           <div style="border: 2px solid blue;text-align: center;"><h3>Example SAT problems: TBC</h3></div>
         </div>
       </div>
-      <div style="border: 5px solid green;">
-        <div id="left-mid">
-          <div style="border: 2px solid yellow;"><h3>DIMACS CNF Input:</h3><textarea style="width: 95%;height: 65%;" bind:value={dimacs_input}></textarea></div>
-          <div style="border: 2px solid blue;">
-            <h3>SAT instance in mathematical notation:</h3>
-            <div style="width: 95%;height: 65%;border: 2px solid black;overflow:auto">
-              <!-- <textarea class="output-box" readonly value="{not}" /> -->
-              <!-- <button>dropdown with options for original / current (all eliminations removed) / both</button> -->
-              <Notation htmText={not}></Notation>
-            </div>
+      <div id="left-mid">
+        <div style="border: 2px solid yellow;"><h3>DIMACS CNF Input:</h3><textarea style="width: 95%;height: 65%;" bind:value={dimacs_input}></textarea></div>
+        <div style="border: 2px solid blue;">
+          <h3>SAT instance in mathematical notation:</h3>
+          <div style="width: 95%;height: auto;border: 2px solid black;overflow:auto;max-height:15em">
+            <!-- <textarea class="output-box" readonly value="{not}" /> -->
+            <!-- <button>dropdown with options for original / current (all eliminations removed) / both</button> -->
+            <Notation clauses={clauses} assignments={variableAssignments}></Notation>
           </div>
         </div>
       </div>
-      <div style="border: 5px solid blue;">
-        <div id="left-bot">
-          <VariableInteractionGraph elements={variableInteractionElements}></VariableInteractionGraph>
-          <SearchGraph elements={searchGraphElements}></SearchGraph>
-        </div>
+      <div id="left-bot">
+        <VariableInteractionGraph elements={variableInteractionElements}></VariableInteractionGraph>
+        <SearchGraph elements={searchGraphElements}></SearchGraph>
       </div>
     </div>
     <!-- Right Hand Side -->
-    <div>
-      <div class="right-boxes">
-        <div id="right-top">
-          <div><h2>SAT solving log</h2></div>
-          <div style="text-align: right;"><a href="https://example.com" target="_blank" rel="noreferrer">User instruction manual</a></div>
-        </div>
-        <div class="output-box-container" style="background-color: aqua;">
-          <textarea class="output-box" id="sat-log" readonly value="{solverEventLog}" />                    
-        </div>
-        <div>
-          <button on:click={parseDIMACS}>Parse Input</button>
-          <button on:click={solveStep}>Solve (Single Step)</button>
-          <button on:click={solveAll}>Solve All</button>
-          <h3>Learnt Clauses</h3>
-        </div>
-        <div class="output-box-container" style="background-color: red;">
-          <textarea class="output-box" id="learnt-clauses" readonly value="{test}" />
-        </div>
+    <div class="right-boxes">
+      <div id="right-top">
+        <div><h2>SAT solving log</h2></div>
+        <div style="text-align: right;"><a href="https://example.com" target="_blank" rel="noreferrer">User instruction manual</a></div>
+      </div>
+      <div class="output-box-container" style="background-color: aqua;">
+        <textarea class="output-box" id="sat-log" readonly value="{solverEventLog}" />                    
+      </div>
+      <div>
+        <button on:click={parseDIMACS}>Parse Input</button>
+        <button on:click={solveStep}>Solve (Single Step)</button>
+        <button on:click={solveAll}>Solve All</button>
+        <h3>Learnt Clauses</h3>
+      </div>
+      <div class="output-box-container" style="background-color: red;">
+        <textarea class="output-box" id="learnt-clauses" readonly value="{test}" />
       </div>
     </div>
   </section>

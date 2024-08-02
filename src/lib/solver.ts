@@ -61,7 +61,8 @@ export class solver {
     public getAssignments(){
         // Returns only variables which are assigned. When solved some might not have been assigned, they can take either value without impacting the solution
         // This can be improved on to find unassigned varibles and highlight these or return multiple sets of results
-        return this.variableAssignments
+        // Returns a Map to allow easy lookup
+        return new Map(this.variableAssignments)
     }
     
     public getEvents(){
