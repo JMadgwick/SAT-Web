@@ -57,12 +57,11 @@
   }
   math {
     color: black;
-    padding: 0.25em;
   }
   /* Chrome version 29 and above */
   @media screen and (-webkit-min-device-pixel-ratio:0) and (min-resolution:.001dpcm) {
     math{
-      display: flow;
+      display: ruby;
     }
   }
 </style>
