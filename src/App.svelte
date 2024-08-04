@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Counter from './lib/Counter.svelte'
   import Notation from './lib/Notation.svelte'
   import SearchGraph from './lib/SearchGraph.svelte'
   import VariableInteractionGraph from './lib/VariableInteractionGraph.svelte'
@@ -15,14 +14,19 @@
   let test = "" //placehodler testing search tree
   let searchGraphElements:cytoscape.ElementDefinition[] // Search Graph Cytoscape elements
   let variableInteractionElements:[Boolean, cytoscape.ElementDefinition[]] // Variable Interaction Graph Cytoscape elements
-  let dimacs_input = // DIMACS input from UI (automatically updated when text input changes)
+  let dimacsInput = // DIMACS input from UI (automatically updated when text input changes)
   `c simple_v3_c2.cnf
 p cnf 3 2
 -1 -3 0
 2 3 -1 0
 3 -1 0`//ex5 is good, NQueens10quad ok, NQueens15 times out
+  let dimacsFile:FileList // DIMACS file input
+  // This reactive statement runs whenever the value it involves changes (which happens when a new file is picked)
+  $: if (dimacsFile) {
+    dimacsFile[0].text().then(txt => dimacsInput = txt)
+	}
   function parseDIMACS(){
-    solver = new basicSolver(dimacs_input)
+    solver = new basicSolver(dimacsInput)
     solver.parse()
     clauses = solver.clauses
     variableAssignments = solver.getAssignments()
@@ -59,13 +63,16 @@ p cnf 3 2
     <!-- Left Hand Side -->
     <div class="left-boxes">
       <div id="left-top">
-        <div style="border: 2px solid yellow;align-items: center;display: flex;justify-content: center"><Counter /></div>
+        <div id="file-upload" style="border: 2px solid yellow;align-items: center;display: flex;justify-content: center">
+          <label for="dimacs-file">Load DIMACS from file</label>
+          <input type="file" accept="text/*,.cnf" bind:files={dimacsFile} id="dimacs-file" name="dimacs">
+        </div>
         <div style="border: 2px solid blue;text-align: center;"><h3>Example SAT problems: TBC</h3></div>
       </div>
       <div id="left-mid">
         <div style="border: 2px solid yellow;display:flex;flex-flow:column;">
           <h3>DIMACS CNF Input:</h3>
-          <textarea id="dimacs-input" bind:value={dimacs_input}/>
+          <textarea id="dimacs-input" bind:value={dimacsInput}/>
         </div>
         <div style="border: 2px solid blue;">
           <h3>SAT instance in mathematical notation:</h3>
@@ -180,5 +187,26 @@ p cnf 3 2
     border: 3px solid lightseagreen;
     height: 100%;
     box-sizing: border-box;/* required for proper nesting */
+  }
+  #file-upload input {
+    width: 0em;
+    height: 0em;
+  }
+  button, #file-upload label {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: skyblue;
+    cursor: pointer;
+    transition: border-color 0.25s;
+  }
+  button:hover, #file-upload label:hover {
+    border-color: #646cff;
+  }
+  button:focus, #file-upload label:focus, button:focus-visible, #file-upload label:focus-visible {
+    outline: 4px auto -webkit-focus-ring-color;
   }
 </style>
