@@ -57,11 +57,7 @@
   }
   math {
     color: black;
-  }
-  /* Chrome version 29 and above */
-  @media screen and (-webkit-min-device-pixel-ratio:0) and (min-resolution:.001dpcm) {
-    math{
-      display: ruby;
-    }
+    /* ruby is a workaround as Chrome will otherwise not wrap */
+    display: ruby;
   }
 </style>

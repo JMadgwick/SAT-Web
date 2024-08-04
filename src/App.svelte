@@ -58,26 +58,26 @@ p cnf 3 2
   <section class="panels">
     <!-- Left Hand Side -->
     <div class="left-boxes">
-      <div style="border: 5px solid red;">
-        <div id="left-top">
-          <div style="border: 2px solid yellow;align-items: center;display: flex;justify-content: center"><Counter /></div>
-          <div style="border: 2px solid blue;text-align: center;"><h3>Example SAT problems: TBC</h3></div>
-        </div>
+      <div id="left-top">
+        <div style="border: 2px solid yellow;align-items: center;display: flex;justify-content: center"><Counter /></div>
+        <div style="border: 2px solid blue;text-align: center;"><h3>Example SAT problems: TBC</h3></div>
       </div>
       <div id="left-mid">
-        <div style="border: 2px solid yellow;"><h3>DIMACS CNF Input:</h3><textarea style="width: 95%;height: 65%;" bind:value={dimacs_input}></textarea></div>
+        <div style="border: 2px solid yellow;display:flex;flex-flow:column;">
+          <h3>DIMACS CNF Input:</h3>
+          <textarea id="dimacs-input" bind:value={dimacs_input}/>
+        </div>
         <div style="border: 2px solid blue;">
           <h3>SAT instance in mathematical notation:</h3>
-          <div style="width: 95%;height: auto;border: 2px solid black;overflow:auto;max-height:15em">
-            <!-- <textarea class="output-box" readonly value="{not}" /> -->
+          <div id="notation">
             <!-- <button>dropdown with options for original / current (all eliminations removed) / both</button> -->
-            <Notation clauses={clauses} assignments={variableAssignments}></Notation>
+            <Notation clauses={clauses} assignments={variableAssignments}/>
           </div>
         </div>
       </div>
       <div id="left-bot">
-        <VariableInteractionGraph elements={variableInteractionElements}></VariableInteractionGraph>
-        <SearchGraph elements={searchGraphElements}></SearchGraph>
+        <VariableInteractionGraph elements={variableInteractionElements}/>
+        <SearchGraph elements={searchGraphElements}/>
       </div>
     </div>
     <!-- Right Hand Side -->
@@ -130,6 +130,21 @@ p cnf 3 2
     /* gap: 4px; */
     /* align-items: center;
     display: flex; */
+  }
+  #dimacs-input {
+    width: 95%;
+    height: 15em;
+    margin: 0 auto;
+  }
+  #notation {
+    width: 98%;
+    height: auto;
+    border: 2px solid black;
+    overflow: auto;
+    max-height: 15em;
+    min-height: 1.8em;
+    margin: 0 auto;
+    padding: 0.25em;
   }
   #right-top {
     display: grid;
