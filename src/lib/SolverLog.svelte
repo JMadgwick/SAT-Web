@@ -1,4 +1,3 @@
-<svelte:options namespace="mathml"/>
 <script lang="ts">
   import {afterUpdate} from 'svelte'
   import {type eventType} from "./solver"
@@ -27,7 +26,7 @@
 <div id="log-container" bind:this={logContainerElement}>
   {#each events as event}
     {#if event.type == "assign"}
-      <span class="{event.type}">Assigning <span style="color: {(event.val) ? "green" : "red"};">{event.val}</span> to <math><msub><mi>x</mi><mn>{event.var}</mn></msub></math>{"\n"}</span>
+      <span class="{event.type}">Assigning <span style="color: {(event.val) ? "green" : "red"};">{event.val}</span> to <i>x{event.var}</i>{"\n"}</span>
     {:else}
       <span class="{event.type}">{formatEvent(event)}</span>
     {/if}
