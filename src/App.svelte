@@ -3,13 +3,13 @@
   import Notation from './lib/Notation.svelte'
   import SearchGraph from './lib/SearchGraph.svelte'
   import VariableInteractionGraph from './lib/VariableInteractionGraph.svelte'
-  import SATLog from './lib/log'
+  import SolverLog from './lib/SolverLog.svelte'
   import eventsToSearchElements from './lib/searchGraph'
   import clausesToInteractionElements from './lib/variableInteractionGraph'
   import cytoscape from 'cytoscape'
-  import {solver as basicSolver} from './lib/solver' // use export default to remove need for {}
+  import {solver as basicSolver, type eventType} from './lib/solver' // use export default to remove need for {}
   let solver = new basicSolver("")
-  let solverEventLog = "" // Output log for solver, reassignments automatically trigger UI updates
+  let events: eventType[] = [] // Solver events
   let clauses:number[][] = [] // For storing clauses, reassignments automatically trigger UI updates
   let variableAssignments:Map<number, boolean> // For storing variable assignments
   let test = "" //placehodler testing search tree
@@ -20,7 +20,7 @@
   // This reactive statement runs whenever the value it involves changes (which happens when a new file is picked)
   $: if (dimacsFile) {
     dimacsFile[0].text().then(txt => dimacsInput = txt)
-	}
+  }
   let exampleProblem:string = "" // Example problem selection
   $: if (exampleProblem != "") {
     dimacsInput = exampleProblem
@@ -32,13 +32,13 @@
     clauses = solver.clauses
     variableAssignments = solver.getAssignments()
     searchGraphElements = []
+    events = []
     variableInteractionElements = [true, clausesToInteractionElements(solver.clauses)]
   }
 
   function solveStep(){
     if (!solver.isSolvingFinished()) {
-      let events = solver.solveStep()
-      solverEventLog = SATLog(events)
+      events = solver.solveStep()
       searchGraphElements = eventsToSearchElements(events)
       clauses = solver.clauses
       variableAssignments = solver.getAssignments()
@@ -51,8 +51,7 @@
     while (!solver.isSolvingFinished()) {
       solver.solveStep()
     }
-    let events = solver.getEvents()
-    solverEventLog = SATLog(events)
+    events = solver.getEvents()
     searchGraphElements = eventsToSearchElements(events)
     test = JSON.stringify(searchGraphElements)
     let endTime = Date.now()
@@ -98,8 +97,8 @@
         <div><h2>SAT solving log</h2></div>
         <div style="text-align: right;"><a href="https://example.com" target="_blank" rel="noreferrer">User instruction manual</a></div>
       </div>
-      <div class="output-box-container" style="background-color: aqua;">
-        <textarea class="output-box" id="sat-log" readonly value="{solverEventLog}" />                    
+      <div class="output-box-container" style="border: 5px solid aqua;">
+        <SolverLog bind:events/>
       </div>
       <div>
         <button on:click={parseDIMACS}>Parse Input</button>
