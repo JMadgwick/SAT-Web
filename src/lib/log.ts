@@ -15,8 +15,12 @@ export default function eventsToLog(events: eventType[]): string {
                 log = log + "Backtracking.\n"
                 break;
 
-            case "solved":
-                log = log + "Solved."
+            case "SAT":
+                log = log + "Solved (Satisfiable)."
+                break;
+
+            case "UNSAT":
+                log = log + "Could not solve (Unsatisfiable)."
                 break;
 
             default:

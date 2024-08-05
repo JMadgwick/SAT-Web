@@ -31,6 +31,7 @@
     solver.parse()
     clauses = solver.clauses
     variableAssignments = solver.getAssignments()
+    searchGraphElements = []
     variableInteractionElements = [true, clausesToInteractionElements(solver.clauses)]
   }
 

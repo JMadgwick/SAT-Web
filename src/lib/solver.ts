@@ -82,7 +82,6 @@ export class solver {
 
     private solveOneStep(){
         //TODO move out to another method to call this one, can be just in parent class
-        let logText = ""
         let nextProcessedClauses: number[][] = []
         let variable: number
         let lit: number
@@ -107,8 +106,8 @@ export class solver {
                 }
                 if (this.variableAssignments.length == 0) { // If variableAssignments is empty then we are at root node and cannot backtrack - can set failed flag and end
                     this.complete = true
-                    //TODO this needs an event for the log
-                    return //failed
+                    events.push({ type: "UNSAT" })
+                    return events
                 } else { //then regenerate the processed clauses and continue
                     this.variableAssignments.pop()// remove the prior assignment
                     this.regenerateProcessedClauses()
@@ -120,17 +119,14 @@ export class solver {
         }
 
         let negLit = 0-lit
-        logText = `Assigning ${varBool} to ${variable}`
         events.push({ type: "assign", var: variable, val: varBool })
         this.variableAssignments.push([variable, varBool])
-        logText = logText + "\nAll assignments: "+this.variableAssignments
 
         // Remove this literal from clauses
         for (let clause of this.processedClauses) {
             if (!clause.includes(lit)) { // If it doesn't include this literal (if it does then eliminated)
                 let newClause = clause.filter((clit) => clit != negLit) // Remove negated version of the variable
                 if (newClause.length == 0) { // Check if the clause is now empty
-                    logText = logText + `\nRemoving ${negLit} causes an empty clause, will try to backtrack`
                     this.backtrack = true // Set flag to backtrack on next step
                     events.push({ type: "failure" })
                     return events
@@ -143,10 +139,9 @@ export class solver {
         this.processedClauses = nextProcessedClauses
         if (this.processedClauses.length == 0) {
             this.complete = true
-            events.push({ type: "solved" })
+            events.push({ type: "SAT" })
             return events
         }
-        logText = logText + `\nClauses: ${nextProcessedClauses}, count: ${nextProcessedClauses.length}`
         return events
     }
 
