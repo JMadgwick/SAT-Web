@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Examples from './lib/Examples.svelte'
   import Notation from './lib/Notation.svelte'
   import SearchGraph from './lib/SearchGraph.svelte'
   import VariableInteractionGraph from './lib/VariableInteractionGraph.svelte'
@@ -14,17 +15,17 @@
   let test = "" //placehodler testing search tree
   let searchGraphElements:cytoscape.ElementDefinition[] // Search Graph Cytoscape elements
   let variableInteractionElements:[Boolean, cytoscape.ElementDefinition[]] // Variable Interaction Graph Cytoscape elements
-  let dimacsInput = // DIMACS input from UI (automatically updated when text input changes)
-  `c simple_v3_c2.cnf
-p cnf 3 2
--1 -3 0
-2 3 -1 0
-3 -1 0`//ex5 is good, NQueens10quad ok, NQueens15 times out
+  let dimacsInput = ""// DIMACS input from UI (automatically updated when text input changes)
   let dimacsFile:FileList // DIMACS file input
   // This reactive statement runs whenever the value it involves changes (which happens when a new file is picked)
   $: if (dimacsFile) {
     dimacsFile[0].text().then(txt => dimacsInput = txt)
 	}
+  let exampleProblem:string = "" // Example problem selection
+  $: if (exampleProblem != "") {
+    dimacsInput = exampleProblem
+    exampleProblem = ""
+  }
   function parseDIMACS(){
     solver = new basicSolver(dimacsInput)
     solver.parse()
@@ -63,11 +64,14 @@ p cnf 3 2
     <!-- Left Hand Side -->
     <div class="left-boxes">
       <div id="left-top">
-        <div id="file-upload" style="border: 2px solid yellow;align-items: center;display: flex;justify-content: center">
+        <div id="file-upload" style="border: 2px solid yellow;display: flex;justify-content: center;align-items: center;">
           <label for="dimacs-file">Load DIMACS from file</label>
           <input type="file" accept="text/*,.cnf" bind:files={dimacsFile} id="dimacs-file" name="dimacs">
         </div>
-        <div style="border: 2px solid blue;text-align: center;"><h3>Example SAT problems: TBC</h3></div>
+        <div style="border: 2px solid blue;display: flex;justify-content: center;align-items: center;">
+          <h3>Example SAT problems:</h3>
+          <Examples bind:selection={exampleProblem}/>
+        </div>
       </div>
       <div id="left-mid">
         <div style="border: 2px solid yellow;display:flex;flex-flow:column;">
