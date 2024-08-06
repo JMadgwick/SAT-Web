@@ -28,12 +28,13 @@
   }
   function parseDIMACS(){
     solver = new basicSolver(dimacsInput)
-    solver.parse()
-    clauses = solver.clauses
-    variableAssignments = solver.getAssignments()
-    searchGraphElements = []
-    events = []
-    variableInteractionElements = [true, clausesToInteractionElements(solver.clauses)]
+    if (solver.parse()) {
+      clauses = solver.clauses
+      variableAssignments = solver.getAssignments()
+      searchGraphElements = []
+      events = []
+      variableInteractionElements = [true, clausesToInteractionElements(solver.clauses)]
+    }
   }
 
   function solveStep(){
