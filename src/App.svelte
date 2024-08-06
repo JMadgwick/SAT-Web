@@ -7,8 +7,9 @@
   import eventsToSearchElements from './lib/searchGraph'
   import clausesToInteractionElements from './lib/variableInteractionGraph'
   import cytoscape from 'cytoscape'
-  import {solver as basicSolver, type eventType} from './lib/solver' // use export default to remove need for {}
-  let solver = new basicSolver("")
+  import {Solver, type eventType} from './lib/solver' // use export default to remove need for {}
+  import { sequentialBacktrackingSolver } from './lib/sequentialBacktrackingSolver';
+  let solver:Solver = new Solver("")
   let events: eventType[] = [] // Solver events
   let clauses:number[][] = [] // For storing clauses, reassignments automatically trigger UI updates
   let variableAssignments:Map<number, boolean> // For storing variable assignments
@@ -27,7 +28,7 @@
     exampleProblem = ""
   }
   function parseDIMACS(){
-    solver = new basicSolver(dimacsInput)
+    solver = new sequentialBacktrackingSolver(dimacsInput)
     if (solver.parse()) {
       clauses = solver.clauses
       variableAssignments = solver.getAssignments()
@@ -77,6 +78,7 @@
       <div id="left-mid">
         <div style="border: 2px solid yellow;display:flex;flex-flow:column;">
           <h3>DIMACS CNF Input:</h3>
+          <!-- TODO disable parse button when box is empty -->
           <textarea id="dimacs-input" bind:value={dimacsInput}/>
         </div>
         <div style="border: 2px solid blue;">
