@@ -34,7 +34,7 @@ export default function process(events: eventType[]):cytoscape.ElementDefinition
                     assignmentTree.pop()
                     break;
 
-                case "solved":
+                case "SAT":
                     elements.push({ data: { id: `${count}`, lab: 'solved' }, classes: 'solved' })
                     break;
 
