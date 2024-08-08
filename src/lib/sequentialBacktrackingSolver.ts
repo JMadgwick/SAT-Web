@@ -16,9 +16,12 @@ export class sequentialBacktrackingSolver extends Solver {
         this.variables = Array.from(uniqueVariables).sort()
     }
     protected setup() {
-        super.setup()
         this.populateVariableList()
-        this.processedClauseHistory.push(this.processedClauses)
+        this.processedClauseHistory.push(this.clauses)
+    }
+
+    public getClauses(){
+        return this.processedClauseHistory[this.processedClauseHistory.length-1]
     }
 
     // Backtrack until a varible to try is found (return true) or no longer possible to backtrack (return false)

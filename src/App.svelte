@@ -44,7 +44,7 @@
       searchGraphElements = eventsToSearchElements(events)
       clauses = solver.clauses
       variableAssignments = solver.getAssignments()
-      variableInteractionElements = [false, clausesToInteractionElements(solver.processedClauses)]
+      variableInteractionElements = [false, clausesToInteractionElements(solver.getClauses())]
     }
   }
 

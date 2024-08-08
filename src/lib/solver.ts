@@ -3,7 +3,7 @@ export type eventType = {type:string,var?:number,val?:boolean}
 export class Solver {
     private dimacs: string
     public clauses: number[][] = []
-    public processedClauses: number[][] = []
+    protected processedClauses: number[][] = []
     protected variableAssignments: [number, boolean][] = []
     protected backtrack = false
     protected complete = false
@@ -75,6 +75,10 @@ export class Solver {
         // This can be improved on to find unassigned varibles and highlight these or return multiple sets of results
         // Returns a Map to allow easy lookup
         return new Map(this.variableAssignments)
+    }
+
+    public getClauses(){
+        return this.processedClauses
     }
     
     public getEvents(){
