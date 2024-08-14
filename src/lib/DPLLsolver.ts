@@ -173,7 +173,7 @@ export class newDPLLSolver{
     let value:boolean = true
     // Determine the variable to assign
     let previouslyAssignedVariable = this.variableAssignmentOrder.at(-1) ?? -99 // get the last assigned variable if it exists, otherwise use zero get first variable in for below
-    let previouslyAssignedVariableValue = this.lastFailedVariableAssignments.get(previouslyAssignedVariable) //get the failed assignment ///// ?? this.variableAssignmentsHistory.at(-1)!.get(previouslyAssignedVariable) //or last known
+    let previouslyAssignedVariableValue = this.lastFailedVariableAssignments.get(previouslyAssignedVariable) //get the failed assignment
     if (previouslyAssignedVariableValue == true) { //if true has already been tried for this variable then try again with false
       variable = previouslyAssignedVariable
       value = false
@@ -251,8 +251,6 @@ export class newDPLLSolver{
         this.nextStepType = "assign" // next step is to try assigning this variable as false
         return backtrackEvents
       }
-      // Remove history to move up on level in the search tree
-      // this.variableAssignmentOrder.pop()
     }
     // VariableAssignments is now empty, therefore the root node has been reached and further backtracking is not possible
     this.nextStepType = "none"
@@ -264,7 +262,7 @@ export class newDPLLSolver{
     let allLiterals: Set<number> = new Set
     let pureLiterals: Array<number> = new Array
     //find set of all literals
-    //todo could this be cached and updated instead of creating from scratch every time?
+    //TODO this be initialised in the level above and cached, it only needs to be run once each time Pure Literal Elimination is done
     for (let clause of this.remainingClausesHistory.at(-1)!) {
       for (let literal of clause) {
         allLiterals.add(literal)
@@ -291,8 +289,6 @@ export class newDPLLSolver{
         clausesAfterElimination = clausesAfterElimination.filter(clause => !clause.includes(literal))
     }
 
-    // update processedClauseHistory with newly eliminated clauses - if the above is really just by-ref then this is not required?? Seems to make a difference, I guess because .filter cretes a new object that replaces old ref
-    // this.processedClauseHistory.pop()//instead of getting last item above, use pop there instead
     this.remainingClausesHistory.push(clausesAfterElimination)
 
     // Create variables assignments for pure literals
@@ -319,8 +315,6 @@ export class newDPLLSolver{
   }
 
   protected runUnitPropagation(dpll:{allUnitLiteralAssignments:Map<number,boolean>; clausesForUnitPropagationElimination:number[][]}, dpllEvents:eventType[]):boolean {
-    //ensure this has its own state. If it fails it checks if the decision can be reassigned and either places its state into fail and sets assign as next, or sets backtrack
-    
     let unitLiterals: Set<number> = new Set // Set to store each unit literal only once
     
     // find all unit clauses (those with length of one)
@@ -360,29 +354,8 @@ export class newDPLLSolver{
     for (let literal of unitLiterals) {
       if (unitLiterals.has(0-literal)) { // If the counterpart for this literal is also a unit, then resolution is impossible
         dpllEvents.push({ type: "unitpropfailureboth", var: literal })
-
-        //NOW WE CHECK TO SEE IF THE NEXT STEP SHOULD BE ASSIGN OR BACKTRACK
-        //IF THE LAST ASSIGNED VARIABLE WAS LAST GIVEN TRUE, THEN WE CAN GO TO ASSIGN
-        //IF FALSE NEEDS TO BE BACKTRACK
-
-        let previouslyAssignedVariable = this.variableAssignmentOrder.at(-1) // Get the last assigned variable, or undefined if there isn't one
-        if (previouslyAssignedVariable == undefined) { // If no variables have been assigned then we are at the root node and the problem is UNSAT
-          this.nextStepType = "none"
-          dpllEvents.push({ type: "UNSAT" })
-          return false
-        }
-        // If the last assigned variable was true
-        if (this.variableAssignmentsHistory.at(-1)!.get(previouslyAssignedVariable)) {
-          this.lastFailedVariableAssignments = this.variableAssignmentsHistory.pop()! // Set the current assignments as failed and remove from variable assignment history
-          //TODO - failed assignments should actually be the ones made in unit prop, otherwise UI will not show them
-          this.remainingClausesHistory.pop() // Remove clause history for this assignment
-          return false // Return (next step is assign by default - where false will be tried)
-        } else { // If the last assigned variable was false
-          this.lastFailedVariableAssignments = this.variableAssignmentsHistory.pop()! // Set the current assignments as failed
-          this.remainingClausesHistory.pop() // Remove clause history for this assignment
-          this.nextStepType = "backtrack" // Next step needs to be backtracking
-          return false
-        }
+        this.handleUnitPropagationFailure(dpllEvents)
+        return false
       }
     }
 
@@ -398,27 +371,8 @@ export class newDPLLSolver{
           let filteredClause = clause.filter((clit) => clit != pureLiteral) // Remove negated literal from this clause
           if (filteredClause.length == 0) { // If this clause is now empty
             dpllEvents.push({ type: "unitpropfailure", var: literal }) // event only lists conflict and not other assignments made before it was found - see pidgeon example
-
-            //----Duplicate of code further up
-            let previouslyAssignedVariable = this.variableAssignmentOrder.at(-1) // Get the last assigned variable, or undefined if there isn't one
-            if (previouslyAssignedVariable == undefined) { // If no variables have been assigned then we are at the root node and the problem is UNSAT
-              this.nextStepType = "none"
-              dpllEvents.push({ type: "UNSAT" })
-              return false
-            }
-            // If the last assigned variable was true
-            if (this.variableAssignmentsHistory.at(-1)!.get(previouslyAssignedVariable)) {
-              this.lastFailedVariableAssignments = this.variableAssignmentsHistory.pop()! // Set the current assignments as failed and remove from variable assignment history
-              //TODO - failed assignments should actually be the ones made in unit prop, otherwise UI will not show them
-              this.remainingClausesHistory.pop() // Remove clause history for this assignment
-              return false // Return (next step is assign by default - where false will be tried)
-            } else { // If the last assigned variable was false
-              this.lastFailedVariableAssignments = this.variableAssignmentsHistory.pop()! // Set the current assignments as failed
-              this.remainingClausesHistory.pop() // Remove clause history for this assignment
-              this.nextStepType = "backtrack" // Next step needs to be backtracking
-              return false
-            }
-            //----End of duplicate of code further up
+            this.handleUnitPropagationFailure(dpllEvents)
+            return false
           }
           clausesAfterElimination.push(filteredClause)
         } else { // Else the given clause does not involve this variable
@@ -440,5 +394,21 @@ export class newDPLLSolver{
 
     // Return true to indicate that Unit Propagation can be run again
     return true
+  }
+  private handleUnitPropagationFailure(dpllEvents:eventType[]) {
+    let previouslyAssignedVariable = this.variableAssignmentOrder.at(-1) // Get the last assigned variable, or undefined if there isn't one
+    if (previouslyAssignedVariable == undefined) { // If no variables have been assigned then we are at the root node and the problem is UNSAT
+      this.nextStepType = "none"
+      dpllEvents.push({ type: "UNSAT" })
+    } else if (this.variableAssignmentsHistory.at(-1)!.get(previouslyAssignedVariable)) { // If the last assigned variable was true
+      this.lastFailedVariableAssignments = this.variableAssignmentsHistory.pop()! // Set the current assignments as failed and remove from variable assignment history
+      // TODO - failed assignments should actually be the ones made in unit prop, otherwise UI will not show them
+      this.remainingClausesHistory.pop() // Remove clause history for this assignment
+      // Next step is assign by default - where false will be tried
+    } else { // If the last assigned variable was false
+      this.lastFailedVariableAssignments = this.variableAssignmentsHistory.pop()! // Set the current assignments as failed
+      this.remainingClausesHistory.pop() // Remove clause history for this assignment
+      this.nextStepType = "backtrack" // Next step needs to be backtracking
+    }
   }
 }
