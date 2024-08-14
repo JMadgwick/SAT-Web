@@ -7,12 +7,12 @@
   import eventsToSearchElements from './lib/searchGraph'
   import clausesToInteractionElements from './lib/variableInteractionGraph'
   import cytoscape from 'cytoscape'
-  import {Solver, type eventType} from './lib/solver' // use export default to remove need for {}
-  import { sequentialBacktrackingSolver } from './lib/sequentialBacktrackingSolver';
-  let solver:Solver = new Solver("")
+  import { newDPLLSolver as DPLLSolver, type eventType } from './lib/DPLLsolver' // use export default to remove need for {}
+  let solver:DPLLSolver = new DPLLSolver("")
   let events: eventType[] = [] // Solver events
   let clauses:number[][] = [] // For storing clauses, reassignments automatically trigger UI updates
   let variableAssignments:Map<number, boolean> // For storing variable assignments
+  let nextSolverStep = "" // Next operation to be taken by the solver
   let test = "" //placehodler testing search tree
   let searchGraphElements:cytoscape.ElementDefinition[] // Search Graph Cytoscape elements
   let variableInteractionElements:[Boolean, cytoscape.ElementDefinition[]] // Variable Interaction Graph Cytoscape elements
@@ -28,13 +28,15 @@
     exampleProblem = ""
   }
   function parseDIMACS(){
-    solver = new sequentialBacktrackingSolver(dimacsInput)
+    // solver = new sequentialBacktrackingSolver(dimacsInput)
+    solver = new DPLLSolver(dimacsInput)
     if (solver.parse()) {
-      clauses = solver.clauses
+      clauses = solver.getInitialClauses()
       variableAssignments = solver.getAssignments()
       searchGraphElements = []
       events = []
-      variableInteractionElements = [true, clausesToInteractionElements(solver.clauses)]
+      nextSolverStep = solver.getNextStep()
+      variableInteractionElements = [true, clausesToInteractionElements(solver.getInitialClauses())]
     }
   }
 
@@ -42,9 +44,11 @@
     if (!solver.isSolvingFinished()) {
       events = solver.solveStep()
       searchGraphElements = eventsToSearchElements(events)
-      clauses = solver.clauses
+      test = JSON.stringify(searchGraphElements)
+      clauses = solver.getInitialClauses()//why call this more than once?
       variableAssignments = solver.getAssignments()
-      variableInteractionElements = [false, clausesToInteractionElements(solver.getClauses())]
+      nextSolverStep = solver.getNextStep()
+      variableInteractionElements = [false, clausesToInteractionElements(solver.getCurrentClauses())]
     }
   }
 
@@ -58,6 +62,21 @@
     test = JSON.stringify(searchGraphElements)
     let endTime = Date.now()
     console.log((endTime - startTime)/1000)
+  }
+
+  function benchmark(){
+    let startTime = Date.now()
+    while (!solver.isSolvingFinished()) {
+      solver.solveStep()
+    }
+    let endTime = Date.now()
+    console.log((endTime - startTime)/1000)
+    let assignments = solver.getAssignments()
+    let text = `Time: ${(endTime - startTime)/1000} secs\nAssignments: `
+    for (const [variable, value] of assignments) {
+      text = text + `${variable}=${value} `
+    }
+    alert(text)
   }
 </script>
 <header></header>
@@ -107,6 +126,8 @@
         <button on:click={parseDIMACS}>Parse Input</button>
         <button on:click={solveStep}>Solve (Single Step)</button>
         <button on:click={solveAll}>Solve All</button>
+        <button on:click={benchmark}>TEST</button>
+        <span>next: {nextSolverStep}</span>
         <h3>Learnt Clauses</h3>
       </div>
       <div class="output-box-container" style="background-color: red;">

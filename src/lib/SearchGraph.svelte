@@ -70,6 +70,45 @@
                 'line-color': 'red',
                 'target-arrow-color': 'red'
                 }
+            },
+
+            {
+                selector: 'node.dpll',
+                style: {
+                'height': 'label',
+                'width': 'label',
+                'shape': 'rectangle',
+                'background-opacity': 0,
+                // Consider setting min-zoomed-font-size
+                'border-opacity': 0,
+                'label': 'data(lab)',
+                'text-wrap': 'wrap',
+                'text-max-width': '115px',
+                'font-size': '0.75em',
+                'text-outline-width': '0.4px'
+                }
+            },
+
+            {
+                selector: 'node.unitprop',
+                style: {
+                'text-outline-color': 'cyan'
+                }
+            },
+
+            {
+                selector: 'node.purelit',
+                style: {
+                'text-outline-color': 'green'
+                }
+            },
+
+            {
+                selector: 'edge.dpll',
+                style: {
+                'line-color': 'black',
+                'target-arrow-color': 'black'
+                }
             }
             ],
 
