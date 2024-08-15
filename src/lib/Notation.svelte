@@ -30,7 +30,7 @@
   {#each clauses as clause, i}
   <mrow class={getClauseStyle(clause)}><mo fence=true largeop=true>(</mo>
     {#each clause as literal, j}
-      <mrow class={getLiteralStyle(literal)}><msub><mi>x</mi><mn>{literal}</mn></msub></mrow>
+      <mrow class={getLiteralStyle(literal)}><msub><mi>{literal > 0 ? "\u{1D465}" : "\u{00AC}\u{1D465}"}</mi><mn>{Math.abs(literal)}</mn></msub></mrow>
       {#if j != clause.length-1}
         <mo>&or;</mo>
       {/if}
