@@ -328,7 +328,7 @@ export class newDPLLSolver{
       if (dpll.allUnitLiteralAssignments.size != 0) { //If some unit propagation assignments were made
         // Replace current assignments and clauses (clausesForUnitPropagationElimination)
 
-        let unitPropagationVariableAssignments = new Map(this.variableAssignmentsHistory.at(-1)!) //try remove new Map, dont think it's needed
+        let unitPropagationVariableAssignments = this.variableAssignmentsHistory.at(-1)!
         // Update Current Variable Assignments to add these propagated units
         for (const [literal, assignment] of dpll.allUnitLiteralAssignments.entries()) {
           unitPropagationVariableAssignments.set(literal,assignment)
