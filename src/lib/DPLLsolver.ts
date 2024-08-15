@@ -9,6 +9,11 @@ export class newDPLLSolver{
   protected nextStepType = "dpll" //next step type, initially dpll
   protected events:eventType[] = []
 
+  // Statistics
+  public stepCount = 0
+  public decisionCount = 0
+  public backtrackCount = 0
+
 
   public constructor(dimacs: string) {
     this.dimacs = dimacs
@@ -121,6 +126,7 @@ export class newDPLLSolver{
           let stepResult = this.solveOneStep()
           if (stepResult != undefined) {
               this.events = this.events.concat(stepResult)
+              this.stepCount++
           }
       }
       return this.events
@@ -168,6 +174,7 @@ export class newDPLLSolver{
   }
 
   protected doAssign():eventType[] {
+    this.decisionCount++
     let assignEvents:eventType[] = [] // Stores events generated during this step
     let variable:number = -99
     let value:boolean = true
@@ -239,6 +246,7 @@ export class newDPLLSolver{
   protected doBacktrack():eventType[] {
     let backtrackCount = 0 // Stores a count for number of backtrack events performed during this step
     while (this.variableAssignmentOrder.length > 0) { // While variables exist to backtrack to
+      this.backtrackCount++
       backtrackCount++ // Add event to indicate backtracking up the search tree
       this.variableAssignmentOrder.pop() // Remove the last assigned variable which has already had false tried
       this.remainingClausesHistory.pop()

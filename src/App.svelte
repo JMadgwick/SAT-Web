@@ -17,6 +17,7 @@
   let variableInteractionElements:[Boolean, cytoscape.ElementDefinition[]] // Variable Interaction Graph Cytoscape elements
   let dimacsInput = ""// DIMACS input from UI (automatically updated when text input changes)
   let dimacsFile:FileList // DIMACS file input
+  let stats = {decisions: 0, steps: 0, backtracks: 0}
   // This reactive statement runs whenever the value it involves changes (which happens when a new file is picked)
   $: if (dimacsFile) {
     dimacsFile[0].text().then(txt => dimacsInput = txt)
@@ -47,6 +48,7 @@
       variableAssignments = solver.getAssignments()
       nextSolverStep = solver.getNextStep()
       variableInteractionElements = [false, clausesToInteractionElements(solver.getCurrentClauses())]
+      stats = {decisions: solver.decisionCount, steps: solver.stepCount, backtracks: solver.backtrackCount}
     }
   }
 
@@ -59,6 +61,7 @@
     searchGraphElements = eventsToSearchElements(events)
     let endTime = Date.now()
     console.log((endTime - startTime)/1000)
+    stats = {decisions: solver.decisionCount, steps: solver.stepCount, backtracks: solver.backtrackCount}
   }
 
   function benchmark(){
@@ -134,9 +137,9 @@
         <h3>Solver Information</h3>
       </div>
       <div class="output-container" id="solver-info" style="border: 2px solid black;margin-left: 0.5em;padding: 0.25em">
-        <div>A</div>
-        <div>B</div>
-        <div>C</div>
+        <div>Decision Count: {stats.decisions}</div>
+        <div>Step Count: {stats.steps}</div>
+        <div>Backtrack Count: {stats.backtracks}</div>
       </div>
     </div>
   </section>
