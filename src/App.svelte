@@ -13,7 +13,6 @@
   let clauses:number[][] = [] // For storing clauses, reassignments automatically trigger UI updates
   let variableAssignments:Map<number, boolean> // For storing variable assignments
   let nextSolverStep = "" // Next operation to be taken by the solver
-  let test = "" //placehodler testing search tree
   let searchGraphElements:cytoscape.ElementDefinition[] // Search Graph Cytoscape elements
   let variableInteractionElements:[Boolean, cytoscape.ElementDefinition[]] // Variable Interaction Graph Cytoscape elements
   let dimacsInput = ""// DIMACS input from UI (automatically updated when text input changes)
@@ -44,7 +43,6 @@
     if (!solver.isSolvingFinished()) {
       events = solver.solveStep()
       searchGraphElements = eventsToSearchElements(events)
-      test = JSON.stringify(searchGraphElements)
       clauses = solver.getInitialClauses()//why call this more than once?
       variableAssignments = solver.getAssignments()
       nextSolverStep = solver.getNextStep()
@@ -59,7 +57,6 @@
     }
     events = solver.getEvents()
     searchGraphElements = eventsToSearchElements(events)
-    test = JSON.stringify(searchGraphElements)
     let endTime = Date.now()
     console.log((endTime - startTime)/1000)
   }
@@ -85,22 +82,22 @@
     <!-- Left Hand Side -->
     <div class="left-boxes">
       <div id="left-top">
-        <div id="file-upload" style="border: 2px solid yellow;display: flex;justify-content: center;align-items: center;">
+        <div id="file-upload" style="display: flex;justify-content: center;align-items: center;">
           <label for="dimacs-file">Load DIMACS from file</label>
           <input type="file" accept="text/*,.cnf" bind:files={dimacsFile} id="dimacs-file" name="dimacs">
         </div>
-        <div style="border: 2px solid blue;display: flex;justify-content: center;align-items: center;">
+        <div style="display: flex;justify-content: center;align-items: center;">
           <h3>Example SAT problems:</h3>
           <Examples bind:selection={exampleProblem}/>
         </div>
       </div>
       <div id="left-mid">
-        <div style="border: 2px solid yellow;display:flex;flex-flow:column;">
+        <div style="display:flex;flex-flow:column;">
           <h3>DIMACS CNF Input:</h3>
           <!-- TODO disable parse button when box is empty -->
           <textarea id="dimacs-input" bind:value={dimacsInput}/>
         </div>
-        <div style="border: 2px solid blue;">
+        <div style="">
           <h3>SAT instance in mathematical notation:</h3>
           <div id="notation">
             <!-- <button>dropdown with options for original / current (all eliminations removed) / both</button> -->
@@ -109,8 +106,14 @@
         </div>
       </div>
       <div id="left-bot">
-        <VariableInteractionGraph elements={variableInteractionElements}/>
-        <SearchGraph elements={searchGraphElements}/>
+        <div style="display: flex;flex-grow: 3;flex-direction: column;max-width: 40em;">
+          <div style="padding-left: 0.25em;">Variable Interaction Graph</div>
+          <VariableInteractionGraph elements={variableInteractionElements}/>
+        </div>
+        <div style="display: flex;flex-grow: 3;flex-direction: column;max-width: 40em;">
+          <div style="padding-left: 0.25em;">Search Graph</div>
+          <SearchGraph elements={searchGraphElements}/>
+        </div>
       </div>
     </div>
     <!-- Right Hand Side -->
@@ -119,19 +122,21 @@
         <div><h2>SAT solving log</h2></div>
         <div style="text-align: right;"><a href="https://example.com" target="_blank" rel="noreferrer">User instruction manual</a></div>
       </div>
-      <div class="output-box-container" style="border: 5px solid aqua;">
+      <div class="output-container" style="">
         <SolverLog bind:events/>
       </div>
-      <div>
+      <div style="padding-left: 0.5em;">
         <button on:click={parseDIMACS}>Parse Input</button>
         <button on:click={solveStep}>Solve (Single Step)</button>
         <button on:click={solveAll}>Solve All</button>
-        <button on:click={benchmark}>TEST</button>
-        <span>next: {nextSolverStep}</span>
-        <h3>Learnt Clauses</h3>
+        <button on:click={benchmark}>Benchmark</button>
+        <span>Next Step: {nextSolverStep}</span>
+        <h3>Solver Information</h3>
       </div>
-      <div class="output-box-container" style="background-color: red;">
-        <textarea class="output-box" id="learnt-clauses" readonly value="{test}" />
+      <div class="output-container" id="solver-info" style="border: 2px solid black;margin-left: 0.5em;padding: 0.25em">
+        <div>A</div>
+        <div>B</div>
+        <div>C</div>
       </div>
     </div>
   </section>
@@ -150,11 +155,7 @@
     resize: none;
     overflow-y: scroll;
   }
-  .output-box {
-    width: 100%;
-    margin: 0.5em;
-  }
-  .output-box-container {
+  .output-container {
     display: flex;
   }
   .panels {
@@ -170,6 +171,7 @@
     width: 95%;
     height: 15em;
     margin: 0 auto;
+    border: 2px solid black;
   }
   #notation {
     width: 98%;
@@ -193,32 +195,35 @@
   .left-boxes {
     display: grid;
     grid-template-rows: 1fr 4fr 8fr;/* 4em 30em 30em */
-    border: 5px solid chocolate;
+    /* border: 5px solid chocolate; */
   }
   #left-top {
     display: grid;
     grid-template-columns: 2fr 6fr;
-    border: 3px solid green;
+    /* border: 3px solid green; */
     height: 100%;
     box-sizing: border-box;/* required for proper nesting */
   }
   #left-mid {
     display: grid;
     grid-template-columns: 3fr 5fr;
-    border: 3px solid orchid;
+    /* border: 3px solid orchid; */
     height: 100%;
     box-sizing: border-box;/* required for proper nesting */
   }
   #left-bot {
-    display: grid;
+    display: flex;
     grid-template-columns: 1fr 1fr;
-    border: 3px solid lightseagreen;
+    /* border: 3px solid lightseagreen; */
     height: 100%;
     box-sizing: border-box;/* required for proper nesting */
   }
   #file-upload input {
     width: 0em;
     height: 0em;
+  }
+  #solver-info {
+    display: grid;
   }
   button, #file-upload label {
     border-radius: 8px;
