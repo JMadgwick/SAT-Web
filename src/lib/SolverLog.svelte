@@ -9,8 +9,6 @@
 
   function formatEvent(event:eventType): string {
     switch (event.type) {
-      case "backtrack":
-        return "Backtracking\n"
       case "SAT":
         return "Solved (Satisfiable)"
       case "UNSAT":
@@ -52,6 +50,8 @@
     <span class="failure">Conflict during unit propagation.</span> Caused by assignment of <span style="color: {getLiteralColor(event.var)};">{getLiteralColor(event.var) == 'green'}</span> to {getLiteralAbs(event.var)}.{"\n"}
     {:else if event.type == "unitpropfailureboth"}
     <span class="failure">Conflict during unit propagation.</span> Caused by unit literals of both <i>x{getLiteralAbs(event.var)}</i> and &not;<i>x{getLiteralAbs(event.var)}</i>.{"\n"}
+    {:else if event.type == "backtrack"}
+    <span class="backtrack">Backtracking{(event.var == 1) ? "" : ` (${event.var} times)`}.</span>{"\n"}
     {:else}
       <span class="{event.type}">{formatEvent(event)}</span>
     {/if}

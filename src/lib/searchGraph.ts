@@ -29,7 +29,8 @@ export default function process(events: eventType[]):cytoscape.ElementDefinition
                 break;
 
             case "backtrack":
-                assignmentTree.pop()
+                for (let i = 0; i < event.var!; i++)
+                    assignmentTree.pop()   
                 break;
 
             case "SAT":

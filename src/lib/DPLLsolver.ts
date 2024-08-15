@@ -237,25 +237,20 @@ export class newDPLLSolver{
   }
 
   protected doBacktrack():eventType[] {
-    let backtrackEvents:eventType[] = [] // Stores events generated during this step
-    let lastVariableAssignments = (this.lastFailedVariableAssignments.size > 0) ? this.lastFailedVariableAssignments : this.variableAssignmentsHistory.at(-1)! // Last set of assignment to look at is the failed set unless it is empty
-    //consider adding something to the event so that UI shows highlighting on the current node
-    //consider repalcing multiple events with one and a number of times "Backtracking x2"
-
+    let backtrackCount = 0 // Stores a count for number of backtrack events performed during this step
     while (this.variableAssignmentOrder.length > 0) { // While variables exist to backtrack to
-      backtrackEvents.push({ type: "backtrack" }) // Add event to indicate backtracking up the search tree
+      backtrackCount++ // Add event to indicate backtracking up the search tree
       this.variableAssignmentOrder.pop() // Remove the last assigned variable which has already had false tried
       this.remainingClausesHistory.pop()
       this.variableAssignmentsHistory.pop()
       if (this.lastFailedVariableAssignments.get(this.variableAssignmentOrder.at(-1)!)) { // Can false be tried on the next available variable (if so it will have last been assigned true)
         this.nextStepType = "assign" // next step is to try assigning this variable as false
-        return backtrackEvents
+        return [{ type: "backtrack", var:backtrackCount }]
       }
     }
     // VariableAssignments is now empty, therefore the root node has been reached and further backtracking is not possible
     this.nextStepType = "none"
-    backtrackEvents.push({ type: "UNSAT" })
-    return backtrackEvents
+    return [{ type: "UNSAT" }]
   }
 
   protected runPureLiteralElimination(allPureAssignments:Map<number,boolean>, dpllEvents:eventType[]):boolean {
@@ -402,7 +397,6 @@ export class newDPLLSolver{
       dpllEvents.push({ type: "UNSAT" })
     } else if (this.variableAssignmentsHistory.at(-1)!.get(previouslyAssignedVariable)) { // If the last assigned variable was true
       this.lastFailedVariableAssignments = this.variableAssignmentsHistory.pop()! // Set the current assignments as failed and remove from variable assignment history
-      // TODO - failed assignments should actually be the ones made in unit prop, otherwise UI will not show them
       this.remainingClausesHistory.pop() // Remove clause history for this assignment
       // Next step is assign by default - where false will be tried
     } else { // If the last assigned variable was false
