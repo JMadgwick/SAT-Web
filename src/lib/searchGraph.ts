@@ -1,4 +1,4 @@
-import {type eventType} from "./DPLLsolver"
+import {type eventType} from "./solver"
 import cytoscape from 'cytoscape'
 
 // For CDCL backjump, the event can contain the number of jumps, this can then be used to rollback assignmentTree

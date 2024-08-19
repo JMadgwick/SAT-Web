@@ -1,90 +1,22 @@
-export type eventType = {type:string,var?:number,val?:boolean,vvmap?:Map<number,boolean>}
-export class newDPLLSolver{
-  private dimacs: string
-  protected originalProblemClauses: number[][] = []
+import { solver, type eventType } from "./solver"
+export class newDPLLSolver extends solver{
   protected remainingClausesHistory: number[][][] = [] //clause history
-  protected variableAssignmentsHistory:Array<Map<number,boolean|undefined|null>> = new Array //variable history
   protected variableAssignmentOrder: number[] = [] // Stores the order/history of variables which have been assigned in 'applyAssign'. Used for backtracking.
   protected lastFailedVariableAssignments:Map<number,boolean|undefined|null> = new Map//variable histroy for failed
-  protected nextStepType = "dpll" //next step type, initially dpll
-  protected events:eventType[] = []
+  protected nextStepType = "dpll" // Next step type, initially dpll
 
   // Statistics
-  public stepCount = 0
   public decisionCount = 0
   public backtrackCount = 0
 
 
   public constructor(dimacs: string) {
-    this.dimacs = dimacs
+    super(dimacs)
   }
-
-  public parse(): boolean {
-    let p = this.dimacs.match(new RegExp('^p cnf (\\d+) (\\d+)$', 'm')) //TODO use this problem information?
-    if (p == null) { // If problem line is missing
-        alert("missing problem line"); //TODO proper error handling
-    }
-    let cnfInput = this.dimacs.replaceAll(new RegExp('^(p|c).*$', 'mg'), "").trim() // Remove any comment lines and trim remaining whitespace
-    
-    let clause: number[] = []
-    let clauseList: number[][] = []
-
-    if (!cnfInput.endsWith('0')) { // If final clause is not terminated with a zero
-        console.log("CNF not terminated with 0");
-        cnfInput = cnfInput + " 0" // Add whitespace and terminal zero
-    }
-    for (let i = 0, buffer = "", literal: number; i < cnfInput.length; i++){
-        if (cnfInput[i].match(new RegExp('\\s'))) { // Whitespace signifies boundary between literals or clause terminating 0
-            if (buffer != "") { // If buffer contains a literal
-                literal = Number(buffer)
-                if (Number.isNaN(literal)) {
-                    alert(`Invalid DIMACS CNF ('${buffer}' is not a number)`)
-                    return false
-                } else if (literal === 0) {
-                    alert(`Invalid DIMACS CNF ('${buffer}' is not a valid literal)`)
-                    return false
-                }
-                clause.push(literal) // Add literal to clause
-                buffer = ""
-            }
-            if (cnfInput[i+1] == '0') { // Reached end of clause
-                if (clause.length == 0) {
-                    alert("Invalid DIMACS CNF (empty clause)")
-                    return false
-                }
-                clauseList.push(clause)
-                clause = []
-                i++
-            }
-        } else {
-            buffer = buffer + cnfInput[i]
-        }
-    }
-    this.originalProblemClauses = clauseList
-    this.setup()
-    return true
-  }
-
-  // Find all the unique variables used in the problem and add them to a Map in ascending order
-  private populateVariableAssignments():Map<number,boolean|undefined|null> {
-    let uniqueVariables:Set<number> = new Set
-    for (let clause of this.originalProblemClauses) {
-        for (let variable of clause) {
-            uniqueVariables.add(Math.abs(variable))
-        }
-    }
-    let variableAssignments:Map<number,boolean|undefined|null> = new Map
-    Array.from(uniqueVariables).sort((a, b) => a - b).forEach(variable => variableAssignments.set(variable,undefined))
-    return variableAssignments
-}
 
   protected setup() {
-    this.variableAssignmentsHistory.push(this.populateVariableAssignments())
+    super.setup()
     this.remainingClausesHistory.push(this.originalProblemClauses)
-  }
-
-  public isSolvingFinished(){
-    return this.nextStepType == "none"
   }
 
   public getAssignments(){
@@ -105,31 +37,8 @@ export class newDPLLSolver{
         return tmp
   }
 
-  public getInitialClauses(){
-    return this.originalProblemClauses
-  }
-
   public getCurrentClauses() {
     return this.remainingClausesHistory.at(-1)!
-  }
-
-  public getNextStep() {
-    return this.nextStepType
-  }
-
-  public getEvents(){
-    return this.events
-  }
-
-  public solveStep(): eventType[] {
-      if (this.nextStepType != "none") {
-          let stepResult = this.solveOneStep()
-          if (stepResult != undefined) {
-              this.events = this.events.concat(stepResult)
-              this.stepCount++
-          }
-      }
-      return this.events
   }
 
   protected solveOneStep():eventType[] {

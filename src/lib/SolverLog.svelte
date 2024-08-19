@@ -1,6 +1,6 @@
 <script lang="ts">
   import {afterUpdate} from 'svelte'
-  import {type eventType} from "./DPLLsolver"
+  import {type eventType} from "./solver"
   export let events: eventType[]
   let logContainerElement:HTMLDivElement
 

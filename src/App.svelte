@@ -7,7 +7,8 @@
   import eventsToSearchElements from './lib/searchGraph'
   import clausesToInteractionElements from './lib/variableInteractionGraph'
   import cytoscape from 'cytoscape'
-  import { newDPLLSolver as DPLLSolver, type eventType } from './lib/DPLLsolver' // use export default to remove need for {}
+  import { newDPLLSolver as DPLLSolver } from './lib/DPLLsolver' // use export default to remove need for {}
+  import type { eventType } from './lib/solver'
   let solver:DPLLSolver = new DPLLSolver("")
   let events: eventType[] = [] // Solver events
   let clauses:number[][] = [] // For storing clauses, reassignments automatically trigger UI updates
