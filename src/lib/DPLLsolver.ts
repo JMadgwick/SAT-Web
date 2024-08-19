@@ -1,5 +1,5 @@
 import { solver, type eventType } from "./solver"
-export class newDPLLSolver extends solver{
+export class DPLLSolver extends solver{
   protected remainingClausesHistory: number[][][] = [] //clause history
   protected variableAssignmentOrder: number[] = [] // Stores the order/history of variables which have been assigned in 'applyAssign'. Used for backtracking.
   protected lastFailedVariableAssignments:Map<number,boolean|undefined|null> = new Map//variable histroy for failed

@@ -7,7 +7,8 @@
   import eventsToSearchElements from './lib/searchGraph'
   import clausesToInteractionElements from './lib/variableInteractionGraph'
   import cytoscape from 'cytoscape'
-  import { newDPLLSolver as DPLLSolver } from './lib/DPLLsolver' // use export default to remove need for {}
+  import { DPLLSolver } from './lib/DPLLsolver' // use export default to remove need for {}
+  import { backtrackingSolver } from './lib/backtrackingsolver'
   import type { eventType } from './lib/solver'
   let solver:DPLLSolver = new DPLLSolver("")
   let events: eventType[] = [] // Solver events
@@ -29,7 +30,6 @@
     exampleProblem = ""
   }
   function parseDIMACS(){
-    // solver = new sequentialBacktrackingSolver(dimacsInput)
     solver = new DPLLSolver(dimacsInput)
     if (solver.parse()) {
       clauses = solver.getInitialClauses()
