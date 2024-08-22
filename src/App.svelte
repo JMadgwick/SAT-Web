@@ -4,6 +4,7 @@
   import SearchGraph from './lib/SearchGraph.svelte'
   import VariableInteractionGraph from './lib/VariableInteractionGraph.svelte'
   import SolverLog from './lib/SolverLog.svelte'
+  import ResultDialog from './lib/ResultDialog.svelte'
   import eventsToSearchElements from './lib/searchGraph'
   import clausesToInteractionElements from './lib/variableInteractionGraph'
   import cytoscape from 'cytoscape'
@@ -23,6 +24,7 @@
   let moreStats = {remainingVariables: 0, remainingClauses: 0, pureLiterals: 0, unitPropagations: 0}
   let solverReady = false
   let solverSelection:string // Kind of solver to use
+  let resultsDialog:ResultDialog // Reference to dialog box component
   // This reactive statement runs whenever the value it involves changes (which happens when a new file is picked)
   $: if (dimacsFile) {
     dimacsFile[0].text().then(txt => dimacsInput = txt)
@@ -85,17 +87,21 @@
     while (!solver.isSolvingFinished()) {
       solver.solveStep()
     }
+    solverReady = false
     let endTime = Date.now()
     console.log((endTime - startTime)/1000)
-    let assignments = solver.getAssignments()
-    let text = `Time: ${(endTime - startTime)/1000} secs\nAssignments: `
-    for (const [variable, value] of assignments) {
-      text = text + `${variable}=${value} `
-    }
-    alert(text)
+    resultsDialog.setValues(`Time taken: ${(endTime - startTime)/1000} secs. Assignments:`, solver.getAssignments())
+    resultsDialog.openBox()
+  }
+
+  function checkAssignments(){
+    resultsDialog.setValues(`Assignments:`, solver.getAssignments())
+    resultsDialog.openBox()
   }
 </script>
-<header></header>
+<header>
+  <ResultDialog bind:this={resultsDialog}/>
+</header>
 <main>
   <section class="panels">
     <!-- Left Hand Side -->
@@ -153,18 +159,19 @@
         <button on:click={solveStep} disabled={!solverReady}>Solve (Single Step)</button>
         <button on:click={solveAll} disabled={!solverReady}>Solve All</button>
         <button on:click={benchmark} disabled={!solverReady}>Benchmark</button>
+        <button on:click={checkAssignments} disabled={!(solverReady || solver.isSolvingFinished())}>View Assignments</button>
         <span>Next Step: <span style="text-transform: uppercase;">{nextSolverStep}</span></span>
         <h3>Solver Information</h3>
       </div>
       <div class="output-container" id="solver-info" style="border: 2px solid black;margin-left: 0.5em;padding: 0.25em">
-        <div class={solverReady ? "hidden" : ""}>Solver not initialised. Use "Parse Input" to load a problem from input.</div>
-        <div class={solverReady ? "" : "hidden"}>Decision Count: {basicStats.decisions}</div>
-        <div class={solverReady ? "" : "hidden"}>Step Count: {basicStats.steps}</div>
-        <div class={solverReady ? "" : "hidden"}>Backtrack Count: {basicStats.backtracks}</div>
-        <div class={solverReady ? "" : "hidden"}>Remaining Clause Count: {moreStats.remainingClauses}</div>
-        <div class={solverReady ? "" : "hidden"}>Remaining Variable Count: {moreStats.remainingVariables}</div>
-        <div class={(solverReady && solverSelection == "dpll") ? "" : "hidden"}>Pure Literal Elimination Count: {moreStats.pureLiterals}</div>
-        <div class={(solverReady && solverSelection == "dpll") ? "" : "hidden"}>Unit Propagation Count: {moreStats.unitPropagations}</div>
+        <div class={(solverReady || solver.isSolvingFinished()) ? "hidden" : ""}>Solver not initialised. Use "Parse Input" to load a problem from input.</div>
+        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Decision Count: {basicStats.decisions}</div>
+        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Step Count: {basicStats.steps}</div>
+        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Backtrack Count: {basicStats.backtracks}</div>
+        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Remaining Clause Count: {moreStats.remainingClauses}</div>
+        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Remaining Variable Count: {moreStats.remainingVariables}</div>
+        <div class={((solverReady || solver.isSolvingFinished()) && solverSelection == "dpll") ? "" : "hidden"}>Pure Literal Elimination Count: {moreStats.pureLiterals}</div>
+        <div class={((solverReady || solver.isSolvingFinished()) && solverSelection == "dpll") ? "" : "hidden"}>Unit Propagation Count: {moreStats.unitPropagations}</div>
       </div>
     </div>
   </section>
