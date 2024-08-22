@@ -32,6 +32,9 @@
     dimacsInput = exampleProblem
     exampleProblem = ""
   }
+  $: if (solverSelection) {
+    solverReady = false
+  }
   function parseDIMACS(){
     basicStats = {decisions: 0, steps: 0, backtracks: 0}
     moreStats = {remainingVariables: 0, remainingClauses: 0, pureLiterals: 0, unitPropagations: 0}
@@ -150,17 +153,18 @@
         <button on:click={solveStep} disabled={!solverReady}>Solve (Single Step)</button>
         <button on:click={solveAll} disabled={!solverReady}>Solve All</button>
         <button on:click={benchmark} disabled={!solverReady}>Benchmark</button>
-        <span>Next Step: {nextSolverStep}</span>
+        <span>Next Step: <span style="text-transform: uppercase;">{nextSolverStep}</span></span>
         <h3>Solver Information</h3>
       </div>
       <div class="output-container" id="solver-info" style="border: 2px solid black;margin-left: 0.5em;padding: 0.25em">
-        <div>Decision Count: {basicStats.decisions}</div>
-        <div>Step Count: {basicStats.steps}</div>
-        <div>Backtrack Count: {basicStats.backtracks}</div>
-        <div>Remaining Clause Count: {moreStats.remainingClauses}</div>
-        <div>Remaining Variable Count: {moreStats.remainingVariables}</div>
-        <div>Pure Literal Elimination Count: {moreStats.pureLiterals}</div>
-        <div>Unit Propagation Count: {moreStats.unitPropagations}</div>
+        <div class={solverReady ? "hidden" : ""}>Solver not initialised. Use "Parse Input" to load a problem from input.</div>
+        <div class={solverReady ? "" : "hidden"}>Decision Count: {basicStats.decisions}</div>
+        <div class={solverReady ? "" : "hidden"}>Step Count: {basicStats.steps}</div>
+        <div class={solverReady ? "" : "hidden"}>Backtrack Count: {basicStats.backtracks}</div>
+        <div class={solverReady ? "" : "hidden"}>Remaining Clause Count: {moreStats.remainingClauses}</div>
+        <div class={solverReady ? "" : "hidden"}>Remaining Variable Count: {moreStats.remainingVariables}</div>
+        <div class={(solverReady && solverSelection == "dpll") ? "" : "hidden"}>Pure Literal Elimination Count: {moreStats.pureLiterals}</div>
+        <div class={(solverReady && solverSelection == "dpll") ? "" : "hidden"}>Unit Propagation Count: {moreStats.unitPropagations}</div>
       </div>
     </div>
   </section>
@@ -254,6 +258,9 @@
     font-size: 100%;
     height: 2.5em;
     font-weight: 500;
+  }
+  .hidden {
+    display: none;
   }
   button, #file-upload label {
     border-radius: 8px;
