@@ -20,6 +20,7 @@
   let dimacsInput = ""// DIMACS input from UI (automatically updated when text input changes)
   let dimacsFile:FileList // DIMACS file input
   let stats = {decisions: 0, steps: 0, backtracks: 0}
+  let solverReady = false
   // This reactive statement runs whenever the value it involves changes (which happens when a new file is picked)
   $: if (dimacsFile) {
     dimacsFile[0].text().then(txt => dimacsInput = txt)
@@ -38,6 +39,7 @@
       events = []
       nextSolverStep = solver.getNextStep()
       variableInteractionElements = [true, clausesToInteractionElements(solver.getInitialClauses())]
+      solverReady = true
     }
   }
 
@@ -51,6 +53,9 @@
       variableInteractionElements = [false, clausesToInteractionElements(solver.getCurrentClauses())]
       stats = {decisions: solver.decisionCount, steps: solver.stepCount, backtracks: solver.backtrackCount}
     }
+    if (solver.isSolvingFinished()) {
+      solverReady = false
+    }
   }
 
   function solveAll(){
@@ -63,6 +68,7 @@
     let endTime = Date.now()
     console.log((endTime - startTime)/1000)
     stats = {decisions: solver.decisionCount, steps: solver.stepCount, backtracks: solver.backtrackCount}
+    solverReady = false
   }
 
   function benchmark(){
@@ -131,9 +137,9 @@
       </div>
       <div style="padding-left: 0.5em;">
         <button on:click={parseDIMACS}>Parse Input</button>
-        <button on:click={solveStep}>Solve (Single Step)</button>
-        <button on:click={solveAll}>Solve All</button>
-        <button on:click={benchmark}>Benchmark</button>
+        <button on:click={solveStep} disabled={!solverReady}>Solve (Single Step)</button>
+        <button on:click={solveAll} disabled={!solverReady}>Solve All</button>
+        <button on:click={benchmark} disabled={!solverReady}>Benchmark</button>
         <span>Next Step: {nextSolverStep}</span>
         <h3>Solver Information</h3>
       </div>
@@ -242,6 +248,10 @@
   }
   button:hover, #file-upload label:hover {
     border-color: #646cff;
+  }
+  button:disabled {
+    border-color: gray;
+    background-color: lightgray;
   }
   button:focus, #file-upload label:focus, button:focus-visible, #file-upload label:focus-visible {
     outline: 4px auto -webkit-focus-ring-color;

@@ -54,6 +54,10 @@ export abstract class solver{
             buffer = buffer + cnfInput[i]
         }
     }
+    if (clauseList.length == 0) {
+      alert("No clauses found")
+      return false
+    }
     this.originalProblemClauses = clauseList
     this.setup()
     return true
