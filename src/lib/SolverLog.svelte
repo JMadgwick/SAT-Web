@@ -62,7 +62,7 @@
   #log-container {
     white-space: pre-line;
     font-weight: bold;
-    overflow: scroll;
+    overflow: auto;
     width: 100%;
     border: 2px solid black;
     margin: 0.5em;

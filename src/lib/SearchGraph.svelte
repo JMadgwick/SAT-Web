@@ -145,6 +145,6 @@
         min-height: 90%;
         flex-grow: 1;
         margin: 0.25em 0.25em 0em 0em;
-        border: 3px solid black;
+        border: 2px solid black;
     }
 </style>

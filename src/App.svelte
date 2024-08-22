@@ -118,12 +118,11 @@
       </div>
       <div id="left-mid">
         <div style="display:flex;flex-flow:column;">
-          <h3>DIMACS CNF Input:</h3>
-          <!-- TODO disable parse button when box is empty -->
+          <h3 style="padding-left: 0.25em;">DIMACS CNF Input:</h3>
           <textarea id="dimacs-input" bind:value={dimacsInput}/>
         </div>
         <div style="">
-          <h3>SAT instance in mathematical notation:</h3>
+          <h3 style="padding-left: 0.25em;">SAT instance in mathematical notation:</h3>
           <div id="notation">
             <!-- <button>dropdown with options for original / current (all eliminations removed) / both</button> -->
             <Notation clauses={clauses} assignments={variableAssignments}/>
@@ -132,11 +131,11 @@
       </div>
       <div id="left-bot">
         <div style="display: flex;flex-grow: 3;flex-direction: column;max-width: 40em;">
-          <div style="padding-left: 0.25em;">Variable Interaction Graph</div>
+          <h4 style="padding-left: 0.15em;margin: 0;">Variable Interaction Graph</h4>
           <VariableInteractionGraph elements={variableInteractionElements}/>
         </div>
-        <div style="display: flex;flex-grow: 3;flex-direction: column;max-width: 40em;">
-          <div style="padding-left: 0.25em;">Search Graph</div>
+        <div style="display: flex;flex-grow: 3;flex-direction: column;max-width: 60em;">
+          <h4 style="padding-left: 0.15em;margin: 0;">Search Graph</h4>
           <SearchGraph elements={searchGraphElements}/>
         </div>
       </div>
@@ -144,7 +143,7 @@
     <!-- Right Hand Side -->
     <div class="right-boxes">
       <div id="right-top">
-        <div><h2>SAT solving log</h2></div>
+        <div><h2 style="padding-left: 0.35em;">SAT solving log</h2></div>
         <div style="text-align: right;"><a href="https://example.com" target="_blank" rel="noreferrer">User instruction manual</a></div>
       </div>
       <div class="output-container" style="">
@@ -155,7 +154,7 @@
           <option value="backtracking">Backtracking</option>
           <option value="dpll" selected>DPLL</option>
         </select>
-        <button on:click={parseDIMACS}>Parse Input</button>
+        <button on:click={parseDIMACS} disabled={dimacsInput==""}>Parse Input</button>
         <button on:click={solveStep} disabled={!solverReady}>Solve (Single Step)</button>
         <button on:click={solveAll} disabled={!solverReady}>Solve All</button>
         <button on:click={benchmark} disabled={!solverReady}>Benchmark</button>
@@ -195,15 +194,10 @@
   }
   .panels {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    /* min-height: 95vh; */
-    /* height: 100%; */
-    /* gap: 4px; */
-    /* align-items: center;
-    display: flex; */
+    grid-template-columns: 3fr 2fr;
   }
   #dimacs-input {
-    width: 95%;
+    width: 98%;
     height: 15em;
     margin: 0 auto;
     border: 2px solid black;
