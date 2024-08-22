@@ -8,6 +8,8 @@ export class DPLLSolver extends solver{
   // Statistics
   public decisionCount = 0
   public backtrackCount = 0
+  public pureLiteralEliminationCount = 0
+  public unitPropagationCount = 0
 
 
   public constructor(dimacs: string) {
@@ -191,6 +193,7 @@ export class DPLLSolver extends solver{
     if (pureLiterals.length == 0) {
       if (allPureAssignments.size != 0) {
         dpllEvents.push({ type: "purelit", vvmap: allPureAssignments })
+        this.pureLiteralEliminationCount = this.pureLiteralEliminationCount + allPureAssignments.size
       }  
       return false
     }
@@ -253,6 +256,7 @@ export class DPLLSolver extends solver{
         this.remainingClausesHistory.push(dpll.clausesForUnitPropagationElimination)
 
         dpllEvents.push({ type: "unitprop", vvmap: dpll.allUnitLiteralAssignments }) // Add Unit Propagation event
+        this.unitPropagationCount = this.unitPropagationCount + dpll.allUnitLiteralAssignments.size
 
         if (dpll.clausesForUnitPropagationElimination.length == 0) { // If all clauses have now been eliminated then SAT
           this.nextStepType = "none"
