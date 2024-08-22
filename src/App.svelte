@@ -22,6 +22,7 @@
   let basicStats = {decisions: 0, steps: 0, backtracks: 0}
   let moreStats = {pureLiterals: 0, unitPropagations: 0}
   let solverReady = false
+  let solverSelection:string // Kind of solver to use
   // This reactive statement runs whenever the value it involves changes (which happens when a new file is picked)
   $: if (dimacsFile) {
     dimacsFile[0].text().then(txt => dimacsInput = txt)
@@ -34,7 +35,7 @@
   function parseDIMACS(){
     basicStats = {decisions: 0, steps: 0, backtracks: 0}
     moreStats = {pureLiterals: 0, unitPropagations: 0}
-    solver = new DPLLSolver(dimacsInput)
+    solver = (solverSelection == "dpll") ? new DPLLSolver(dimacsInput) : new backtrackingSolver(dimacsInput)
     if (solver.parse()) {
       clauses = solver.getInitialClauses()
       variableAssignments = solver.getAssignments()
@@ -141,6 +142,10 @@
         <SolverLog bind:events/>
       </div>
       <div style="padding-left: 0.5em;">
+        <select id="solver-selection" bind:value={solverSelection}>
+          <option value="backtracking">Backtracking</option>
+          <option value="dpll" selected>DPLL</option>
+        </select>
         <button on:click={parseDIMACS}>Parse Input</button>
         <button on:click={solveStep} disabled={!solverReady}>Solve (Single Step)</button>
         <button on:click={solveAll} disabled={!solverReady}>Solve All</button>
@@ -241,6 +246,12 @@
   }
   #solver-info {
     display: grid;
+  }
+  #solver-selection {
+    font-family: inherit;
+    font-size: 100%;
+    height: 2.5em;
+    font-weight: 500;
   }
   button, #file-upload label {
     border-radius: 8px;
