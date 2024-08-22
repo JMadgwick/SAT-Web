@@ -29,6 +29,14 @@ export class DPLLSolver extends solver{
     }
   }
 
+  public getRemainingVariableCount():number {
+    return (this.variableAssignmentsHistory.at(0)!.size - this.getAssignments().size)
+  }
+
+  public getRemainingClauseCount():number {
+    return (this.originalProblemClauses.length - (this.originalProblemClauses.length - this.remainingClausesHistory.at(-1)!.length))
+  }
+
   private tmptransform(input:Map<number,boolean|undefined|null>):Map<number,boolean> {
     let tmp:Map<number,boolean> = new Map
         for (let [key,value] of input) {

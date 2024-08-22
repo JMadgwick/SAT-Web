@@ -20,7 +20,7 @@
   let dimacsInput = ""// DIMACS input from UI (automatically updated when text input changes)
   let dimacsFile:FileList // DIMACS file input
   let basicStats = {decisions: 0, steps: 0, backtracks: 0}
-  let moreStats = {pureLiterals: 0, unitPropagations: 0}
+  let moreStats = {remainingVariables: 0, remainingClauses: 0, pureLiterals: 0, unitPropagations: 0}
   let solverReady = false
   let solverSelection:string // Kind of solver to use
   // This reactive statement runs whenever the value it involves changes (which happens when a new file is picked)
@@ -34,7 +34,7 @@
   }
   function parseDIMACS(){
     basicStats = {decisions: 0, steps: 0, backtracks: 0}
-    moreStats = {pureLiterals: 0, unitPropagations: 0}
+    moreStats = {remainingVariables: 0, remainingClauses: 0, pureLiterals: 0, unitPropagations: 0}
     solver = (solverSelection == "dpll") ? new DPLLSolver(dimacsInput) : new backtrackingSolver(dimacsInput)
     if (solver.parse()) {
       clauses = solver.getInitialClauses()
@@ -56,7 +56,7 @@
       nextSolverStep = solver.getNextStep()
       variableInteractionElements = [false, clausesToInteractionElements(solver.getCurrentClauses())]
       basicStats = {decisions: solver.decisionCount, steps: solver.stepCount, backtracks: solver.backtrackCount}
-      moreStats = {pureLiterals: solver.pureLiteralEliminationCount, unitPropagations: solver.unitPropagationCount}
+      moreStats = {remainingVariables: solver.getRemainingVariableCount(), remainingClauses: solver.getRemainingClauseCount(), pureLiterals: solver.pureLiteralEliminationCount, unitPropagations: solver.unitPropagationCount}
     }
     if (solver.isSolvingFinished()) {
       solverReady = false
@@ -73,7 +73,7 @@
     let endTime = Date.now()
     console.log((endTime - startTime)/1000)
     basicStats = {decisions: solver.decisionCount, steps: solver.stepCount, backtracks: solver.backtrackCount}
-    moreStats = {pureLiterals: solver.pureLiteralEliminationCount, unitPropagations: solver.unitPropagationCount}
+    moreStats = {remainingVariables: 0, remainingClauses: 0, pureLiterals: solver.pureLiteralEliminationCount, unitPropagations: solver.unitPropagationCount}
     solverReady = false
   }
 
@@ -157,6 +157,8 @@
         <div>Decision Count: {basicStats.decisions}</div>
         <div>Step Count: {basicStats.steps}</div>
         <div>Backtrack Count: {basicStats.backtracks}</div>
+        <div>Remaining Clause Count: {moreStats.remainingClauses}</div>
+        <div>Remaining Variable Count: {moreStats.remainingVariables}</div>
         <div>Pure Literal Elimination Count: {moreStats.pureLiterals}</div>
         <div>Unit Propagation Count: {moreStats.unitPropagations}</div>
       </div>
