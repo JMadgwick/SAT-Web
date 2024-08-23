@@ -164,13 +164,13 @@
       </div>
       <div class="output-container" id="solver-info" style="border: 2px solid black;margin-left: 0.5em;padding: 0.25em">
         <div class={(solverReady || solver.isSolvingFinished()) ? "hidden" : ""}>Solver not initialised. Use "Parse Input" to load a problem from input.</div>
-        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Decision Count: {basicStats.decisions}</div>
-        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Step Count: {basicStats.steps}</div>
-        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Backtrack Count: {basicStats.backtracks}</div>
-        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Remaining Clause Count: {moreStats.remainingClauses}</div>
-        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Remaining Variable Count: {moreStats.remainingVariables}</div>
-        <div class={((solverReady || solver.isSolvingFinished()) && solverSelection == "dpll") ? "" : "hidden"}>Pure Literal Elimination Count: {moreStats.pureLiterals}</div>
-        <div class={((solverReady || solver.isSolvingFinished()) && solverSelection == "dpll") ? "" : "hidden"}>Unit Propagation Count: {moreStats.unitPropagations}</div>
+        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Decision Count: <b>{basicStats.decisions}</b></div>
+        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Step Count: <b>{basicStats.steps}</b></div>
+        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Backtrack Count: <b>{basicStats.backtracks}</b></div>
+        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Remaining Clause Count: <b>{moreStats.remainingClauses}</b></div>
+        <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Remaining Variable Count: <b>{moreStats.remainingVariables}</b></div>
+        <div class={((solverReady || solver.isSolvingFinished()) && solverSelection == "dpll") ? "" : "hidden"}>Pure Literal Elimination Count: <b>{moreStats.pureLiterals}</b></div>
+        <div class={((solverReady || solver.isSolvingFinished()) && solverSelection == "dpll") ? "" : "hidden"}>Unit Propagation Count: <b>{moreStats.unitPropagations}</b></div>
       </div>
     </div>
   </section>
