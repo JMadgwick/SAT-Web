@@ -1,10 +1,16 @@
 # SAT Web
 
-# Running Preview
+## Prerequisites
+
+Node JS (tested with version v22.8.0)
+
+Vite, install with `npm install vite`.
+
+## Running Preview
 
 `npm run dev`
 
-# Building
+## Building
 
 Generates HTML and assets and places them into a `dist` folder.
 
