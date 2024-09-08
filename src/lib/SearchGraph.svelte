@@ -6,7 +6,6 @@
 
     export let elements:cytoscape.ElementDefinition[]
 
-    // Add an option to shown text with a button in the UI
     function updateGraph(elements:cytoscape.ElementDefinition[]){
         cy = cytoscape({
             container: document.getElementById('cy-sg'),
@@ -17,7 +16,6 @@
             {
                 selector: 'node',
                 style: {
-                // 'label': 'data(lab)',
                 'text-valign': 'center'
                 }
             },
@@ -49,7 +47,6 @@
             {
                 selector: 'edge',
                 style: {
-                // 'label': 'data(lab)',
                 'width': 3,
                 'target-arrow-shape': 'triangle',
                 'curve-style': 'bezier'
@@ -79,7 +76,6 @@
                 'width': 'label',
                 'shape': 'rectangle',
                 'background-opacity': 0,
-                // Consider setting min-zoomed-font-size
                 'border-opacity': 0,
                 'label': 'data(lab)',
                 'text-wrap': 'wrap',
@@ -122,7 +118,6 @@
     // Cytoscape will otherwise be unable to find the element to use as it will not exist yet
     function onDOMUpdate(node: HTMLElement, elements:cytoscape.ElementDefinition[]) {
         // Called when the node has been mounted in the DOM
-        // updateGraph(elements)
 
 		return {
             // Called when the value has changed

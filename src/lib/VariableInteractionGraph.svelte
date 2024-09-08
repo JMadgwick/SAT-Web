@@ -81,7 +81,6 @@
     }
 </script>
 
-<!-- Add info on zoom level and -->
 <div use:onDOMUpdate={elements} id="cy-vig"></div>
 
 <style>

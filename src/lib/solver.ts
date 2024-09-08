@@ -16,7 +16,7 @@ export abstract class solver{
   public parse(): boolean {
     let p = this.dimacs.match(new RegExp('^p cnf (\\d+) (\\d+)$', 'm')) //TODO use this problem information?
     if (p == null) { // If problem line is missing
-        alert("missing problem line"); //TODO proper error handling
+        alert("missing problem line");
     }
     let cnfInput = this.dimacs.replaceAll(new RegExp('^(p|c).*$', 'mg'), "").trim() // Remove any comment lines and trim remaining whitespace
     

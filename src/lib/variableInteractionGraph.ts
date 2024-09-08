@@ -1,7 +1,7 @@
 import cytoscape from 'cytoscape'
 
 export default function process(clauses: number[][]){
-    //Get a list of all variables (ie without sign)
+    // Get a list of all variables (ie without sign)
     let uniqueVariables: number[] = []
     for (let clause of clauses) {
         for (let literal of clause) {
@@ -13,21 +13,20 @@ export default function process(clauses: number[][]){
     }
     uniqueVariables.sort()
 
-    //Create a node for each variable
-    let nodes:cytoscape.ElementDefinition[] = []
-    let edges: Set<string> = new Set//new Set<cytoscape.ElementDefinition>()
+    // Create a node for each variable
+    let nodes: cytoscape.ElementDefinition[] = []
+    let edges: Set<string> = new Set
     for (let variable of uniqueVariables) {
         nodes.push({ data: { id: `${variable}` } })
     }
-    //For each variable, loop through all clauses looking for it and create links to all others in that clause. (This process will create duplicates)
+    // For each variable, loop through all clauses looking for it and create links to all others in that clause.
     for (let variable of uniqueVariables) {
-        // elements.push({ data: { id: `${variable}`, lab: `${variable}` }, classes: 'var' })
         for (let clause of clauses) {
             if (clause.includes(variable) || clause.includes(0-variable)) {
                 let newClause = clause.filter((clit) => ((clit != 0-variable) && (clit != variable)))
                 for (let literal of newClause) {
                     let clauseVariable = Math.abs(literal)
-                    //use lower number as source always to avoid duplicate edges
+                    // Only use lower number as source to avoid making duplicate edges
                     if (variable > clauseVariable) {
                         edges.add(`${clauseVariable}-${variable}`)
                     } else {

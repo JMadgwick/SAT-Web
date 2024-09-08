@@ -11,20 +11,20 @@
   import { DPLLSolver } from './lib/DPLLsolver' // use export default to remove need for {}
   import { backtrackingSolver } from './lib/backtrackingsolver'
   import type { eventType } from './lib/solver'
-  let solver:DPLLSolver = new DPLLSolver("")
+  let solver: DPLLSolver = new DPLLSolver("")
   let events: eventType[] = [] // Solver events
-  let clauses:number[][] = [] // For storing clauses, reassignments automatically trigger UI updates
-  let variableAssignments:Map<number, boolean> // For storing variable assignments
+  let clauses: number[][] = [] // For storing clauses, reassignments automatically trigger UI updates
+  let variableAssignments: Map<number, boolean> // For storing variable assignments
   let nextSolverStep = "" // Next operation to be taken by the solver
-  let searchGraphElements:cytoscape.ElementDefinition[] // Search Graph Cytoscape elements
-  let variableInteractionElements:[Boolean, cytoscape.ElementDefinition[]] // Variable Interaction Graph Cytoscape elements
-  let dimacsInput = ""// DIMACS input from UI (automatically updated when text input changes)
-  let dimacsFile:FileList // DIMACS file input
+  let searchGraphElements: cytoscape.ElementDefinition[] // Search Graph Cytoscape elements
+  let variableInteractionElements: [Boolean, cytoscape.ElementDefinition[]] // Variable Interaction Graph Cytoscape elements
+  let dimacsInput = "" // DIMACS input from UI (automatically updated when text input changes)
+  let dimacsFile: FileList // DIMACS file input
   let basicStats = {decisions: 0, steps: 0, backtracks: 0}
   let moreStats = {remainingVariables: 0, remainingClauses: 0, pureLiterals: 0, unitPropagations: 0}
   let solverReady = false
-  let solverSelection:string // Kind of solver to use
-  let resultsDialog:ResultDialog // Reference to dialog box component
+  let solverSelection: string // Kind of solver to use
+  let resultsDialog: ResultDialog // Reference to dialog box component
   // This reactive statement runs whenever the value it involves changes (which happens when a new file is picked)
   $: if (dimacsFile) {
     dimacsFile[0].text().then(txt => dimacsInput = txt)
@@ -124,7 +124,6 @@
         <div style="">
           <h3 style="padding-left: 0.25em;">SAT instance in mathematical notation:</h3>
           <div id="notation">
-            <!-- <button>dropdown with options for original / current (all eliminations removed) / both</button> -->
             <Notation clauses={clauses} assignments={variableAssignments}/>
           </div>
         </div>
@@ -178,8 +177,6 @@
 <footer>&COPY; 2024</footer>
 
 <style>
-  /* Todo: Somehow use grid and flex thing to start from scratch? */
-  /* Setting 95vh on ".panels" with everything empty might be a solution, or 100vh on body or smthing? */
   footer {
     color: #888;
     text-align: center;
@@ -215,35 +212,30 @@
   #right-top {
     display: grid;
     grid-template-columns: 3fr 1fr;
-    /* gap: 4px; */
   }
   .right-boxes {
     display: grid;
-    grid-template-rows: 4em 30em 6em 30em;/* 1fr 4fr 1fr 4fr; */
+    grid-template-rows: 4em 30em 6em 30em;
   }
   .left-boxes {
     display: grid;
-    grid-template-rows: 1fr 4fr 8fr;/* 4em 30em 30em */
-    /* border: 5px solid chocolate; */
+    grid-template-rows: 1fr 4fr 8fr;
   }
   #left-top {
     display: grid;
     grid-template-columns: 2fr 6fr;
-    /* border: 3px solid green; */
     height: 100%;
     box-sizing: border-box;/* required for proper nesting */
   }
   #left-mid {
     display: grid;
     grid-template-columns: 3fr 5fr;
-    /* border: 3px solid orchid; */
     height: 100%;
     box-sizing: border-box;/* required for proper nesting */
   }
   #left-bot {
     display: flex;
     grid-template-columns: 1fr 1fr;
-    /* border: 3px solid lightseagreen; */
     height: 100%;
     box-sizing: border-box;/* required for proper nesting */
   }
