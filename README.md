@@ -1,19 +1,25 @@
 # SAT Web
 
-## Prerequisites
+## Accessing SAT Web
 
-Node JS (tested with version v22.8.0)
+[SAT Web can be accessed from GitHub pages](https://jmadgwick.github.io/SAT-Web/).
 
-Vite, install with `npm install vite`.
+## Developing
 
-## Running Preview
+### Prerequisites
+
+Node JS (tested with version v22.14.0 & v22.8.0)
+
+### Installing dependencies
+
+`npm install`
+
+### Running Preview
 
 `npm run dev`
 
-## Building
+### Building
 
 Generates HTML and assets and places them into a `dist` folder.
 
 `npm run build`
-
-Resulting files need to be placed at the webserver root.
