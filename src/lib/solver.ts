@@ -14,10 +14,7 @@ export abstract class solver{
   }
 
   public parse(): boolean {
-    let p = this.dimacs.match(new RegExp('^p cnf (\\d+) (\\d+)$', 'm')) //TODO use this problem information?
-    if (p == null) { // If problem line is missing
-        alert("missing problem line");
-    }
+    let problemInfo = this.dimacs.match(new RegExp('^p cnf (\\d+) (\\d+)$', 'm')) // Extract problem information from DIMACS header
     let cnfInput = this.dimacs.replaceAll(new RegExp('^(p|c).*$', 'mg'), "").trim() // Remove any comment lines and trim remaining whitespace
     
     let clause: number[] = []
@@ -60,6 +57,9 @@ export abstract class solver{
     }
     this.originalProblemClauses = clauseList
     this.setup()
+    if (problemInfo == null) { // Show the determined problem header if it is missing
+      alert(`Problem header missing. It should be: p cnf ${this.variableAssignmentsHistory.at(0)?.size} ${this.originalProblemClauses.length}`);
+    }
     return true
   }
 
