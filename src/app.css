@@ -23,11 +23,10 @@ a:hover {
 }
 
 body {
-  margin: 0 0;
-}
-
-#app {
-  margin: 1em;
+  margin: 0;
+  height: 100vh;
+  max-height: 100vh;
+  min-height: 80vh;
 }
 
 h1 {

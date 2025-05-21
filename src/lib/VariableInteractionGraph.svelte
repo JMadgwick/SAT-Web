@@ -85,10 +85,7 @@
 
 <style>
     #cy-vig {
-        min-width: 90%;
-        min-height: 90%;
-        flex-grow: 1;
-        margin: 0.25em 0.25em 0em 0em;
+        flex: 1 1 auto;
         border: 2px solid black;
     }
 </style>

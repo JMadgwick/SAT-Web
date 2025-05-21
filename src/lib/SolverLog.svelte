@@ -65,8 +65,7 @@
     overflow: auto;
     width: 100%;
     border: 2px solid black;
-    margin: 0.5em;
-    padding: 0.25em;
+    padding: 0.1em;
     color: navy;
   }
   .failure {

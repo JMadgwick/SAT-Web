@@ -103,52 +103,52 @@
   <ResultDialog bind:this={resultsDialog}/>
 </header>
 <main>
-  <section class="panels">
-    <!-- Left Hand Side -->
-    <div class="left-boxes">
-      <div id="left-top">
-        <div id="file-upload" style="display: flex;justify-content: center;align-items: center;">
-          <label for="dimacs-file">Load DIMACS from file</label>
-          <input type="file" accept="text/*,.cnf" bind:files={dimacsFile} id="dimacs-file" name="dimacs">
-        </div>
-        <div style="display: flex;justify-content: center;align-items: center;">
-          <h3>Example SAT problems:</h3>
-          <Examples bind:selection={exampleProblem}/>
-        </div>
+  <!-- Left Hand Side -->
+  <div id="left-boxes">
+    <div id="left-top">
+      <div id="file-upload" style="display: flex;justify-content: center;align-items: center;">
+        <label for="dimacs-file">Load DIMACS from file</label>
+        <input type="file" accept="text/*,.cnf" bind:files={dimacsFile} id="dimacs-file" name="dimacs">
       </div>
-      <div id="left-mid">
-        <div style="display:flex;flex-flow:column;">
-          <h3 style="padding-left: 0.25em;">DIMACS CNF Input:</h3>
-          <textarea id="dimacs-input" bind:value={dimacsInput}/>
-        </div>
-        <div style="">
-          <h3 style="padding-left: 0.25em;">SAT instance in mathematical notation:</h3>
-          <div id="notation">
-            <Notation clauses={clauses} assignments={variableAssignments}/>
-          </div>
-        </div>
+      <div style="display: flex;justify-content: center;align-items: center;">
+        <h3>Example SAT problems:</h3>
+        <Examples bind:selection={exampleProblem}/>
       </div>
-      <div id="left-bot">
-        <div style="display: flex;flex-grow: 3;flex-direction: column;max-width: 40em;">
-          <h4 style="padding-left: 0.15em;margin: 0;">Variable Interaction Graph</h4>
-          <VariableInteractionGraph elements={variableInteractionElements}/>
-        </div>
-        <div style="display: flex;flex-grow: 3;flex-direction: column;max-width: 60em;">
-          <h4 style="padding-left: 0.15em;margin: 0;">Search Graph</h4>
-          <SearchGraph elements={searchGraphElements}/>
+    </div>
+    <div id="left-mid">
+      <div class="flex-container">
+        <h3>DIMACS CNF Input:</h3>
+        <textarea id="dimacs-input" bind:value={dimacsInput}/>
+      </div>
+      <div class="flex-container">
+        <h3>SAT instance in mathematical notation:</h3>
+        <div id="notation">
+          <Notation clauses={clauses} assignments={variableAssignments}/>
         </div>
       </div>
     </div>
-    <!-- Right Hand Side -->
-    <div class="right-boxes">
+    <div id="left-bot">
+      <div class="flex-container">
+        <h4>Variable Interaction Graph</h4>
+        <VariableInteractionGraph elements={variableInteractionElements}/>
+      </div>
+      <div class="flex-container">
+        <h4>Search Graph</h4>
+        <SearchGraph elements={searchGraphElements}/>
+      </div>
+    </div>
+  </div>
+  <!-- Right Hand Side -->
+  <div id="right-boxes">
+    <div class="flex-container">
       <div id="right-top">
-        <div><h2 style="padding-left: 0.35em;">SAT solving log</h2></div>
+        <div><h2>SAT solving log</h2></div>
         <div style="text-align: right;"><a href="https://example.com" target="_blank" rel="noreferrer">User instruction manual</a></div>
       </div>
-      <div class="output-container" style="">
+      <div id="solverlog">
         <SolverLog bind:events/>
       </div>
-      <div style="padding-left: 0.5em;">
+      <div>
         <select id="solver-selection" bind:value={solverSelection}>
           <option value="backtracking">Backtracking</option>
           <option value="dpll" selected>DPLL</option>
@@ -159,9 +159,11 @@
         <button on:click={benchmark} disabled={!solverReady}>Benchmark</button>
         <button on:click={checkAssignments} disabled={!(solverReady || solver.isSolvingFinished())}>View Assignments</button>
         <span>Next Step: <span style="text-transform: uppercase;">{nextSolverStep}</span></span>
-        <h3>Solver Information</h3>
       </div>
-      <div class="output-container" id="solver-info" style="border: 2px solid black;margin-left: 0.5em;padding: 0.25em">
+    </div>
+    <div class="flex-container">
+      <h3>Solver Information</h3>
+      <div id="solver-info">
         <div class={(solverReady || solver.isSolvingFinished()) ? "hidden" : ""}>Solver not initialised. Use "Parse Input" to load a problem from input.</div>
         <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Decision Count: <b>{basicStats.decisions}</b></div>
         <div class={(solverReady || solver.isSolvingFinished()) ? "" : "hidden"}>Step Count: <b>{basicStats.steps}</b></div>
@@ -172,9 +174,9 @@
         <div class={((solverReady || solver.isSolvingFinished()) && solverSelection == "dpll") ? "" : "hidden"}>Unit Propagation Count: <b>{moreStats.unitPropagations}</b></div>
       </div>
     </div>
-  </section>
+  </div>
 </main>
-<footer>&COPY; 2024</footer>
+<footer>&COPY; 2025</footer>
 
 <style>
   footer {
@@ -186,26 +188,27 @@
     resize: none;
     overflow-y: scroll;
   }
-  .output-container {
-    display: flex;
-  }
-  .panels {
+  main {
     display: grid;
     grid-template-columns: 3fr 2fr;
+    flex: 1 1 auto;
+    max-height: 96vh;
+    min-height: inherit;
+    height: 96vh;
   }
   #dimacs-input {
-    width: 98%;
-    height: 15em;
+    width: 100%;
+    box-sizing: border-box;
+    height: 25vh;
     margin: 0 auto;
     border: 2px solid black;
   }
   #notation {
-    width: 98%;
-    height: auto;
+    width: 100%;
     border: 2px solid black;
     overflow: auto;
-    max-height: 15em;
-    min-height: 1.8em;
+    height: 25vh;
+    box-sizing: border-box;
     margin: 0 auto;
     padding: 0.25em;
   }
@@ -213,38 +216,51 @@
     display: grid;
     grid-template-columns: 3fr 1fr;
   }
-  .right-boxes {
+  #right-boxes {
     display: grid;
-    grid-template-rows: 4em 30em 6em 30em;
+    grid-template-rows: 8fr 7fr;
+    max-height: inherit;
   }
-  .left-boxes {
+  #left-boxes {
     display: grid;
     grid-template-rows: 1fr 4fr 8fr;
+    max-height: inherit;
+  }
+  .flex-container {
+      display: flex;
+      flex-flow: column;
+      padding-left: 0.2em;
+      padding-right: 0.2em;
   }
   #left-top {
     display: grid;
     grid-template-columns: 2fr 6fr;
-    height: 100%;
     box-sizing: border-box;/* required for proper nesting */
   }
   #left-mid {
     display: grid;
     grid-template-columns: 3fr 5fr;
-    height: 100%;
     box-sizing: border-box;/* required for proper nesting */
   }
   #left-bot {
-    display: flex;
+    display: grid;
     grid-template-columns: 1fr 1fr;
-    height: 100%;
     box-sizing: border-box;/* required for proper nesting */
   }
   #file-upload input {
     width: 0em;
     height: 0em;
   }
+  #solverlog {
+    max-height: 30vh;
+    min-height: 30vh;
+    display: flex;
+  }
   #solver-info {
     display: grid;
+    border: 2px solid black;
+    padding: 0.1em;
+    flex: 1 1 auto;
   }
   #solver-selection {
     font-family: inherit;
