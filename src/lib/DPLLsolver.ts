@@ -2,7 +2,7 @@ import { solver, type eventType } from "./solver"
 export class DPLLSolver extends solver{
   protected remainingClausesHistory: number[][][] = [] // Clause history
   protected variableAssignmentOrder: number[] = [] // Stores the order/history of variables which have been assigned in 'applyAssign'. Used for backtracking.
-  protected lastFailedVariableAssignments:Map<number,boolean|undefined|null> = new Map // Variable history for failed assignment
+  protected lastFailedVariableAssignments:Map<number,boolean|undefined> = new Map // Variable history for failed assignment
   protected nextStepType = "dpll" // Next step type, initially dpll
 
   // Statistics
@@ -23,9 +23,9 @@ export class DPLLSolver extends solver{
 
   public getAssignments(){
     if (this.lastFailedVariableAssignments.size!=0) {
-      return this.tmptransform(this.lastFailedVariableAssignments)
+      return this.lastFailedVariableAssignments
     } else {
-      return this.tmptransform(this.variableAssignmentsHistory.at(-1)!)
+      return this.variableAssignmentsHistory.at(-1)!
     }
   }
 
@@ -35,17 +35,6 @@ export class DPLLSolver extends solver{
 
   public getRemainingClauseCount():number {
     return (this.originalProblemClauses.length - (this.originalProblemClauses.length - this.remainingClausesHistory.at(-1)!.length))
-  }
-
-  // Cleans Map to remove any values which are non boolean
-  private tmptransform(input:Map<number,boolean|undefined|null>):Map<number,boolean> {
-    let tmp:Map<number,boolean> = new Map
-        for (let [key,value] of input) {
-            if ((value == true) || (value ==false)) {
-                tmp.set(key,value)
-            }
-        }
-        return tmp
   }
 
   public getCurrentClauses() {
@@ -87,7 +76,7 @@ export class DPLLSolver extends solver{
       runUnitPropagation = this.runUnitPropagation(dpllObjects, dpllEvents)
     }
 
-    if (this.nextStepType == "dpll")// If DPLL stages did not otherwise change the next step, then use assign
+    if (this.nextStepType == "dpll") // If DPLL stages did not otherwise change the next step, then use assign
       this.nextStepType = "assign"
     return dpllEvents
   }
@@ -95,23 +84,23 @@ export class DPLLSolver extends solver{
   protected doAssign():eventType[] {
     this.decisionCount++
     let assignEvents:eventType[] = [] // Stores events generated during this step
-    let variable:number = -99
-    let value:boolean = true
+    let variable:number
+    let value:boolean
     // Determine the variable to assign
-    let previouslyAssignedVariable = this.variableAssignmentOrder.at(-1) ?? -99 // Get the last assigned variable if it exists, otherwise the a variable will be determined in the for loop below
-    let previouslyAssignedVariableValue = this.lastFailedVariableAssignments.get(previouslyAssignedVariable) // Get the failed assignment
-    if (previouslyAssignedVariableValue == true) { // If true has already been tried for this variable then try again with false
+    let previouslyAssignedVariable = this.variableAssignmentOrder.at(-1) ?? 0 // Get the last assigned variable if it exists, otherwise the a new variable will be determined below
+    let previouslyAssignedVariableValue = this.lastFailedVariableAssignments.get(previouslyAssignedVariable) // Get the failed assignment, if it exists
+    if (previouslyAssignedVariableValue == true) { // If a true value has already been tried for this variable then try again with false
       variable = previouslyAssignedVariable
       value = false
-    } else { // Ppick a new variable
-      for (let [histVariable,histValue] of this.variableAssignmentsHistory.at(-1)!.entries()) { // Loop through variables to find one which is not yet assigned
+    } else { // Pick a new variable
+      for (let [histVariable,histValue] of this.variableAssignmentsHistory.at(-1)!.entries()) { // Loop through variables to find one which has not yet been assigned
         if ((histVariable > previouslyAssignedVariable) && (histValue == undefined)) {
           variable = histVariable
           value = true
           break
         }
       }
-      if (variable == -99) {
+      if (variable! == undefined || value! == undefined) {
         this.nextStepType = "none"
         console.log("Error: Could not find a new variable")
         return assignEvents
@@ -119,11 +108,11 @@ export class DPLLSolver extends solver{
       this.variableAssignmentOrder.push(variable) // Add variable to assignment order
     }
 
-    let newVariableAssignments = new Map(this.variableAssignmentsHistory.at(-1)!).set(variable,value) // Next variable assignment Map, to add onto end if success, or to failed history if not
-    let clausesAfterElimination: number[][] = [] // Next clauses to add onto end if success
+    let newVariableAssignments = new Map(this.variableAssignmentsHistory.at(-1)!).set(variable,value) // New variable assignment Map
+    let clausesAfterElimination: number[][] = [] // New clauses array
 
-    let literal = (value) ? variable : 0-variable
-    let oppositeLiteral = 0-literal
+    let literal = (value) ? variable : 0 - variable
+    let oppositeLiteral = 0 - literal
 
     assignEvents.push({ type: "assign", var: variable, val: value })
 
@@ -164,13 +153,13 @@ export class DPLLSolver extends solver{
 
   protected doBacktrack():eventType[] {
     let backtrackCount = 0 // Stores a count for number of backtrack events performed during this step
-    while (this.variableAssignmentOrder.length > 0) { // While variables exist to backtrack to
+    while (this.variableAssignmentOrder.length > 0) { // While previously assigned variables exist to backtrack to
       this.backtrackCount++
       backtrackCount++ // Add event to indicate backtracking up the search tree
       this.variableAssignmentOrder.pop() // Remove the last assigned variable which has already had false tried
       this.remainingClausesHistory.pop()
       this.variableAssignmentsHistory.pop()
-      if (this.lastFailedVariableAssignments.get(this.variableAssignmentOrder.at(-1)!)) { // Can false be tried on the next available variable (if so it will have last been assigned true)
+      if (this.lastFailedVariableAssignments.get(this.variableAssignmentOrder.at(-1)!)) { // Can false be tried on the next available variable (if so the previous assignment will be true)
         this.nextStepType = "assign" // Next step is to try assigning this variable as false
         return [{ type: "backtrack", var:backtrackCount }]
       }
@@ -189,7 +178,7 @@ export class DPLLSolver extends solver{
         allLiterals.add(literal)
       }
     }
-    // For each literal in the set, check if pure (no counterpart in the set), if it is then add to list to get assigned
+    // For each literal in the set, check if pure (no counterpart in the set)
     for (let literal of allLiterals) {
       if (!allLiterals.has(0-literal)) { // If the counterpart for this literal doesn't exist in the problem, then it is pure
         pureLiterals.push(literal)
@@ -242,12 +231,12 @@ export class DPLLSolver extends solver{
     // Find all unit clauses (those with length of one)
     for (let clause of dpll.clausesForUnitPropagationElimination) {
         if (clause.length == 1) {
-            unitLiterals.add(clause[0]) // add unit literals to Set
+            unitLiterals.add(clause[0]) // Add unit literals to Set
         }
     }
     // If no (or no further) unit propagation was possible then return
     if (unitLiterals.size == 0) {
-      if (dpll.allUnitLiteralAssignments.size != 0) { //If some unit propagation assignments were made
+      if (dpll.allUnitLiteralAssignments.size != 0) { // If some unit propagation assignments were made
         // Replace current assignments and clauses (clausesForUnitPropagationElimination)
 
         let unitPropagationVariableAssignments = this.variableAssignmentsHistory.at(-1)!

@@ -1,7 +1,7 @@
 <svelte:options namespace="mathml"/> <!-- Workaround to fix MathML support. See: https://github.com/sveltejs/svelte/issues/6582 -->
 <script lang="ts">
   export let clauses: number[][]
-  export let assignments:Map<number, boolean>
+  export let assignments: Map<number,boolean|undefined>
   function getClauseStyle(clause:number[]){
     let unsetCount = 0
     for (let literal of clause) {

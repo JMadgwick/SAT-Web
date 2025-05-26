@@ -8,13 +8,13 @@
   import eventsToSearchElements from './lib/searchGraph'
   import clausesToInteractionElements from './lib/variableInteractionGraph'
   import cytoscape from 'cytoscape'
-  import { DPLLSolver } from './lib/DPLLsolver' // use export default to remove need for {}
+  import { DPLLSolver } from './lib/DPLLsolver'
   import { backtrackingSolver } from './lib/backtrackingsolver'
   import type { eventType } from './lib/solver'
   let solver: DPLLSolver = new DPLLSolver("")
   let events: eventType[] = [] // Solver events
   let clauses: number[][] = [] // For storing clauses, reassignments automatically trigger UI updates
-  let variableAssignments: Map<number, boolean> // For storing variable assignments
+  let variableAssignments: Map<number,boolean|undefined> // For storing variable assignments
   let nextSolverStep = "" // Next operation to be taken by the solver
   let searchGraphElements: cytoscape.ElementDefinition[] // Search Graph Cytoscape elements
   let variableInteractionElements: [Boolean, cytoscape.ElementDefinition[]] // Variable Interaction Graph Cytoscape elements
@@ -56,7 +56,7 @@
     if (!solver.isSolvingFinished()) {
       events = solver.solveStep()
       searchGraphElements = eventsToSearchElements(events)
-      clauses = solver.getInitialClauses()//why call this more than once?
+      clauses = solver.getInitialClauses()
       variableAssignments = solver.getAssignments()
       nextSolverStep = solver.getNextStep()
       variableInteractionElements = [false, clausesToInteractionElements(solver.getCurrentClauses())]
@@ -235,17 +235,17 @@
   #left-top {
     display: grid;
     grid-template-columns: 2fr 6fr;
-    box-sizing: border-box;/* required for proper nesting */
+    box-sizing: border-box;
   }
   #left-mid {
     display: grid;
     grid-template-columns: 3fr 5fr;
-    box-sizing: border-box;/* required for proper nesting */
+    box-sizing: border-box;
   }
   #left-bot {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    box-sizing: border-box;/* required for proper nesting */
+    box-sizing: border-box;
   }
   #file-upload input {
     width: 0em;

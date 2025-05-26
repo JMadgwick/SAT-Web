@@ -1,8 +1,8 @@
 <script lang="ts">
   let dialog:HTMLDialogElement
   let initialText:string
-  let assignments:Map<number, boolean>
-  export function setValues(text:string, values:Map<number, boolean>){
+  let assignments:Map<number,boolean|undefined>
+  export function setValues(text:string, values:Map<number,boolean|undefined>){
     initialText = text
     assignments = values
   }
@@ -20,7 +20,9 @@
     <span id="assignments">
       {#if assignments != undefined}
       {#each assignments.entries() as [variable, assignment]}
+      {#if assignment != undefined}
       <span style="color: {(assignment) ? "green" : "red"};"><i>x{variable}</i> </span>
+      {/if}
       {/each}
       {/if}
     </span>

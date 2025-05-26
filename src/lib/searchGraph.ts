@@ -1,7 +1,6 @@
 import {type eventType} from "./solver"
 import cytoscape from 'cytoscape'
 
-// For CDCL backjump, the event can contain the number of jumps, this can then be used to rollback assignmentTree
 export default function process(events: eventType[]):cytoscape.ElementDefinition[] {
     let assignmentTree: string[] = [] // History of assignments used to track node id for backtracking
     let count = 100 // Provides a unique id for nodes
@@ -9,13 +8,13 @@ export default function process(events: eventType[]):cytoscape.ElementDefinition
     for (let event of events) {
         switch (event.type) {
             case "assign":
-                if (event.val) {//true
+                if (event.val) { // Successful assignment
                     elements.push({ data: { id: `${count}`, lab: `${event.var}` }, classes: 'var' })
-                    elements.push({ data: { source: `${count}`, target: `${count+1}`, lab: `${event.val}` }, classes: 'true' })//link
+                    elements.push({ data: { source: `${count}`, target: `${count+1}`, lab: `${event.val}` }, classes: 'true' })
                     assignmentTree.push(`${count}`)
                     count++
-                } else {//false
-                    elements.push({ data: { source: assignmentTree.at(-1), target: `${count+1}`, lab: `${event.val}` }, classes: 'false' })//link
+                } else { // Failed assignment (conflict)
+                    elements.push({ data: { source: assignmentTree.at(-1), target: `${count+1}`, lab: `${event.val}` }, classes: 'false' })
                     count++
                 }
                 break;
@@ -39,13 +38,13 @@ export default function process(events: eventType[]):cytoscape.ElementDefinition
             
             case "unitprop":
                 elements.push({ data: { id: `${count}`, lab: processVariableAssignmentMap(event.vvmap!) }, classes: ['dpll','unitprop'] })
-                elements.push({ data: { source: `${count}`, target: `${count+1}` }, classes: 'dpll' })//link
+                elements.push({ data: { source: `${count}`, target: `${count+1}` }, classes: 'dpll' })
                 count++
                 break
 
             case "purelit":
                 elements.push({ data: { id: `${count}`, lab: processVariableAssignmentMap(event.vvmap!) }, classes: ['dpll','purelit'] })
-                elements.push({ data: { source: `${count}`, target: `${count+1}` }, classes: 'dpll' })//link
+                elements.push({ data: { source: `${count}`, target: `${count+1}` }, classes: 'dpll' })
                 count++
                 break
 
@@ -53,7 +52,7 @@ export default function process(events: eventType[]):cytoscape.ElementDefinition
                 break;
         }
     }
-    //In case of incomplete search, put a TBD node at the end to avoid dangling edge
+    // In case of incomplete search, put a TBD node at the end to avoid dangling edge
     if ((elements.at(-1)?.data.lab != "solved") && (elements.at(-1)?.data.lab != "fail")){
         elements.push({ data: { id: `${count}`, lab: "?" }, classes: 'var' })
     }

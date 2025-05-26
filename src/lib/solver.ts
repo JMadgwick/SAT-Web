@@ -2,7 +2,7 @@ export type eventType = {type:string,var?:number,val?:boolean,vvmap?:Map<number,
 export abstract class solver{
   private dimacs: string
   protected originalProblemClauses: number[][] = []
-  protected variableAssignmentsHistory: Array<Map<number,boolean|undefined|null>> = new Array // Array to store history of variable assignments
+  protected variableAssignmentsHistory: Array<Map<number,boolean|undefined>> = new Array // Array to store history of variable assignments
   protected nextStepType = "" // Next step type
   protected events: eventType[] = []
 
@@ -64,14 +64,14 @@ export abstract class solver{
   }
 
   // Find all the unique variables used in the problem and add them to a Map in ascending order
-  private populateVariableAssignments(): Map<number,boolean|undefined|null> {
+  private populateVariableAssignments(): Map<number,boolean|undefined> {
     let uniqueVariables:Set<number> = new Set
     for (let clause of this.originalProblemClauses) {
         for (let variable of clause) {
             uniqueVariables.add(Math.abs(variable))
         }
     }
-    let variableAssignments:Map<number,boolean|undefined|null> = new Map
+    let variableAssignments:Map<number,boolean|undefined> = new Map
     Array.from(uniqueVariables).sort((a, b) => a - b).forEach(variable => variableAssignments.set(variable,undefined))
     return variableAssignments
 }
@@ -84,7 +84,7 @@ export abstract class solver{
     return this.nextStepType == "none"
   }
 
-  public abstract getAssignments(): Map<number, boolean>
+  public abstract getAssignments(): Map<number,boolean|undefined>
 
   public getInitialClauses(){
     return this.originalProblemClauses
