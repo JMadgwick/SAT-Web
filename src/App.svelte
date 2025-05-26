@@ -144,7 +144,7 @@
     <div class="flex-container">
       <div id="right-top">
         <h2 class="tooltip">SAT solving log<span class="tooltiptext" style="top: 18vh; left: 70vw;">Each line in this log represents a single step of the currently selected solver algorithm. For more detail on what these steps mean, please see the user manual.</span></h2>
-        <div style="text-align: right;"><a href="https://example.com" target="_blank" rel="noreferrer">User instruction manual</a></div>
+        <div style="text-align: right;"><a href="manual.pdf" target="_blank" rel="noreferrer">User instruction manual</a></div>
       </div>
       <div id="solverlog">
         <SolverLog bind:events/>

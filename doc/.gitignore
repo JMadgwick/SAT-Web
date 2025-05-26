@@ -1,0 +1,8 @@
+*.xmpdata
+*.synctex.gz
+*.log
+*.aux
+*.out
+*.blg
+*.bbl
+*.pdf
