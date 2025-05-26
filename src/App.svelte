@@ -106,22 +106,23 @@
   <!-- Left Hand Side -->
   <div id="left-boxes">
     <div id="left-top">
-      <div id="file-upload" style="display: flex;justify-content: center;align-items: center;">
+      <div id="file-upload" class="tooltip left-top-containers">
+        <span class="tooltiptext" style="top: 4em; left: 18em;">Load a SAT problem file in DIMACS format from your local computer. Note this only makes the file contents available in your browser, it does not upload anything to a remote server.</span>
         <label for="dimacs-file">Load DIMACS from file</label>
         <input type="file" accept="text/*,.cnf" bind:files={dimacsFile} id="dimacs-file" name="dimacs">
       </div>
-      <div style="display: flex;justify-content: center;align-items: center;">
-        <h3>Example SAT problems:</h3>
+      <div class="left-top-containers">
+        <h3 class="tooltip">Example SAT problems:<span class="tooltiptext" style="top: 13em; left: 4em;">Load an example SAT problem from a prepopulated list. For larger problems the original source is detailed in the comments section.</span></h3>
         <Examples bind:selection={exampleProblem}/>
       </div>
     </div>
     <div id="left-mid">
       <div class="flex-container">
-        <h3>DIMACS CNF Input:</h3>
+        <h3 class="tooltip">DIMACS CNF Input:<span class="tooltiptext" style="top: 13em; left: 4em;">Contains the currently SAT problem in DIMACS format. You can write, edit, or paste in a problem from the clipboard. Any changes made here only take effect after "Parse Input" has been pressed.</span></h3>
         <textarea id="dimacs-input" bind:value={dimacsInput}/>
       </div>
       <div class="flex-container">
-        <h3>SAT instance in mathematical notation:</h3>
+        <h3 class="tooltip">SAT instance in mathematical notation:<span class="tooltiptext" style="top: 13em; left: 45em;">Shows the current problem in standard mathematical format. Variables are coloured green for a true assignment, red for false. Clauses which evaluate to true are highlighted in green, and those evaluating to false in red.</span></h3>
         <div id="notation">
           <Notation clauses={clauses} assignments={variableAssignments}/>
         </div>
@@ -129,11 +130,11 @@
     </div>
     <div id="left-bot">
       <div class="flex-container">
-        <h4>Variable Interaction Graph</h4>
+        <h4 class="tooltip">Variable Interaction Graph<span class="tooltiptext" style="top: 55vh; left: 7.5vw;">This shows the relationships between variables across all clauses of the problem. Each variable is represented as a node, with edges drawn between variables that share the same clause.</span></h4>
         <VariableInteractionGraph elements={variableInteractionElements}/>
       </div>
       <div class="flex-container">
-        <h4>Search Graph</h4>
+        <h4 class="tooltip">Search Graph<span class="tooltiptext" style="top: 55vh; left: 37.5vw;">This shows the sequence of variable assignments in a tree like format, beginning from a root node and branching downwards as variables are assigned. Red nodes represent conflicts, with a single green node indicating where satisfiability was achieved. Assignments made by unit propagation use a cyan outline, and pure literal elimination is indicated by a green outline.</span></h4>
         <SearchGraph elements={searchGraphElements}/>
       </div>
     </div>
@@ -142,17 +143,20 @@
   <div id="right-boxes">
     <div class="flex-container">
       <div id="right-top">
-        <div><h2>SAT solving log</h2></div>
+        <h2 class="tooltip">SAT solving log<span class="tooltiptext" style="top: 18vh; left: 70vw;">Each line in this log represents a single step of the currently selected solver algorithm. For more detail on what these steps mean, please see the user manual.</span></h2>
         <div style="text-align: right;"><a href="https://example.com" target="_blank" rel="noreferrer">User instruction manual</a></div>
       </div>
       <div id="solverlog">
         <SolverLog bind:events/>
       </div>
       <div>
-        <select id="solver-selection" bind:value={solverSelection}>
-          <option value="backtracking">Backtracking</option>
-          <option value="dpll" selected>DPLL</option>
-        </select>
+        <div class="tooltip" style="display: inline;">
+          <select id="solver-selection" bind:value={solverSelection}>
+            <option value="backtracking">Backtracking</option>
+            <option value="dpll" selected>DPLL</option>
+          </select>
+          <span class="tooltiptext" style="top: 38vh; left: 65vw;">The solver algorithm to use. Either a simple backtracking algorithm, or the Davis-Putnam-Logemann-Loveland algorithm.</span>
+        </div>
         <button on:click={parseDIMACS} disabled={dimacsInput==""}>Parse Input</button>
         <button on:click={solveStep} disabled={!solverReady}>Solve (Single Step)</button>
         <button on:click={solveAll} disabled={!solverReady}>Solve All</button>
@@ -227,10 +231,15 @@
     max-height: inherit;
   }
   .flex-container {
-      display: flex;
-      flex-flow: column;
-      padding-left: 0.2em;
-      padding-right: 0.2em;
+    display: flex;
+    flex-flow: column;
+    padding-left: 0.2em;
+    padding-right: 0.2em;
+  }
+  .left-top-containers {
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   #left-top {
     display: grid;
@@ -252,8 +261,9 @@
     height: 0em;
   }
   #solverlog {
-    max-height: 30vh;
-    min-height: 30vh;
+    max-height: 40vh;
+    min-height: 40vh;
+    margin-bottom: 0.2em;
     display: flex;
   }
   #solver-info {
@@ -291,5 +301,24 @@
   }
   button:focus, #file-upload label:focus, button:focus-visible, #file-upload label:focus-visible {
     outline: 4px auto -webkit-focus-ring-color;
+  }
+  .tooltiptext {
+    visibility: hidden;
+    position: absolute;
+    z-index: 1;
+    max-width: 25em;
+    max-height: 15em;
+    background-color: lightblue;
+    border-color: cadetblue;
+    border-style: solid;
+    border-width: 0.2em;
+    color: black;
+    text-align: center;
+    border-radius: 0.5em;
+    font-size: small;
+    font-weight: normal;
+  }
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
   }
 </style>
