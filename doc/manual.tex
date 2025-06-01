@@ -2,8 +2,7 @@
 \usepackage[margin=3cm]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{fancyhdr,babel}
-
-\usepackage{kantlipsum}
+\usepackage{graphicx}
 
 \begin{document}
 \pagestyle{fancy}
@@ -16,21 +15,103 @@
 
 \section{Introduction}
 
-\kant[1]
+SAT-Web is a web-based educational tool for explaining SAT solving, and the first tool of its kind which can be used entirely from
+a web-browser. 
+It provides visualisations with search trees and variable interaction graphs, and includes a DPLL solver with tracing. This manual briefly explains the features of SAT-Web (Section \ref{sec:features}) and how to use it (Section \ref{sec:steps}).
 
-\section{Loading a SAT problem}
+\section{Features}
+\label{sec:features}
 
-\kant[2-5]
+SAT-Web is a single page application (SPA) style interactive web app where all components are visible on the screen at the same time. A panel based layout is used with separate spaces set aside for each feature. No downloads or runtimes are required to use SAT-Web, only a web-browser and access to a URL where the app is hosted. 
 
-\section{Solver Log}
+An example of the SAT-Web interface is shown in Figure~\ref{fig:overview}. SAT-Web has the following components: CNF input area, example SAT problem selection, solver control panel, log for solver tracing, instance representation using mathematical notation, solver information panel, search tree graph visualisation, and variable interaction graph visualisation.
 
-\kant[6-10]
+\begin{figure}[h!]
+\includegraphics[width=1\textwidth]{overview.png}
+\caption{The SAT-Web interface after an example problem has been loaded and solved successfully.}
+\label{fig:overview}
+\end{figure}
 
-\appendix
+\subsection{CNF input and Mathematical Notation display}
 
-\section{SAT Resources}
+The \emph{CNF input} area allows you to manually input a SAT problem (using DIMACS format). You can also loading problems directly from a local file on your computer using the \emph{Load DIMACS from file} button.
+The \emph{example SAT problem} dropdown menu allows for example problems to be loaded directly into the input box. These problems range from very simple (solvable by hand), to some well known more complex problems which cannot be solved by backtracking solvers in a reasonable time.
+The \emph{mathematical notation panel} (Figure~\ref{fig:notation}) uses colour to indicate the currently assigned boolean value of literals and clauses within the current problem. It is only shown once the \emph{Parse Input} button has been successfully used to read a problem from the input area, see Section \ref{sec:steps}.
 
-\kant[10-15]
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{notation.png}
+\caption{Mathematical notation component. Literals are coloured based on their resultant boolean value, with clauses highlighted in green if they are satisfied or red if they are not.}
+\label{fig:notation}
+\end{figure}
+
+\subsection{SAT problem visualisations}
+
+The \emph{variable interaction graph visualisation} (Figure~\ref{fig:vig}) can be zoomed, panned, and nodes in the graph can be moved around.
+
+Variable interaction graphs show relationships between variables across all instance clauses. Each variable is represented as a node, with edges drawn between variables which exist in the same clause. They are helpful for understanding an instance’s current structure, with specific shapes, clusters, and other visual patterns being seen with some SAT instances.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{vig.png}
+\caption{Variable interaction graph generated before solving has started showing the structure of a problem.}
+\label{fig:vig}
+\end{figure}
+
+The \emph{search graph visualisation} (Figures~\ref{fig:backtrackingsearch}~and~\ref{fig:dpllsearch}) supports the same interaction features as the variable interaction graph.
+
+Search graphs (search trees) are a form of graph representing the sequence of variable assignments, beginning from a root node and branching downwards as variables are assigned. They are effective for intuitively visualising backtracking as moving upwards through branches in the tree.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{backtrackingsearch.png}
+\caption{Search graph component showing a small problem solved using backtracking. The green node indicates that satisfiability was achieved, red nodes represent conflicts.}
+\label{fig:backtrackingsearch}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{dpllsearch.png}
+\caption{Search graph component showing part of the tree produced when solving a problem using DPLL. Assignments made by unit propagation have a cyan outline, with pure literal elimination assignments indicated by a green outline.}
+\label{fig:dpllsearch}
+\end{figure}
+
+\subsection{Solver log and control panel}
+
+The \emph{solver control panel} controls all aspects of the app, such as parsing CNF input, selecting algorithms, and viewing final variable assignments. The \emph{solver log} (Figure~\ref{fig:solverlog}) displays traces explaining the internal operations of the solver as you step through a problem, with colour used to emphasise assignments and conflicts. The \emph{solver information panel} displays details such as how many times backtracking has occurred and the number of assignments made by unit propagation or pure literal elimination.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{solverlog.png}
+\caption{SAT tracing log component showing entries after solving a problem.}
+\label{fig:solverlog}
+\end{figure}
+
+\section{How to use SAT-Web}
+\label{sec:steps}
+
+The section explains how to load, parse, and solve a SAT problem and how to use the solver control panel.
+
+\subsection{Loading and parsing a SAT problem}
+
+Follow these steps to load and parse a problem, ready to start solving:
+
+\begin{enumerate}
+  \item Type (or paste from the clipboard) a SAT problem into the \emph{input area} using DIMACS format. Or load an example problem from the \emph{example SAT problem} dropdown menu.
+  \item (Optional - defaults to DPLL) Select the desired SAT solver algorithm using the \emph{algorithm selection} dropdown menu, located on the left of the \emph{Parse Input} button.
+  \item Press the \emph{Parse Input} button to process the SAT problem inputted.
+  \item If there is a problem parsing the input, a message box will be shown with details. If there are no problems, the mathematical notation for the problem will be populated and the remaining solver control panel buttons enabled.
+\end{enumerate}
+
+\subsection{Solving a SAT problem}
+
+Once a SAT problem has been loaded and parsed successfully, you can work through the problem using the chosen SAT solver algorithm. This is done by using the \emph{Solve (Single Step)} button multiple times or by using the \emph{Solve All} button once. The \emph{Solve (Single Step)} button performs a single step of the chosen solver algorithm, updating all visualisations and the solver log afterwards. The \emph{Solve All} button performs as many steps as are necessary to solve the problem, or determine that it is not possible to solve.
+
+After using \emph{Solve All}, only the search graph and solving log are updated. Note that for large problems there may be a delay between using the button and the interface updating. \textbf{Problems which cannot easily be solved with the available algorithms currently cause SAT-Web to freeze}, avoid inputting these problems.
+
+The \emph{View Assignments} button shows the current set of assignments; it can be used at any point in the solving process. The \emph{Benchmark} button performs the same function as \emph{Solve All}, except that once solving is complete a message is shown detailing the time taken to solve the problem, along with the final assignments.
+
+% glossary
 
 \end{document}
 
