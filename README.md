@@ -6,6 +6,10 @@ SAT-Web is a web-based educational tool for explaining [SAT solving](https://en.
 
 [SAT Web can be accessed from GitHub pages](https://jmadgwick.github.io/SAT-Web/).
 
+## Screenshot
+
+![Screenshot of SAT-Web](/doc/overview.png)
+
 ## Developing
 
 ### Prerequisites
