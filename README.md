@@ -29,3 +29,11 @@ Node JS (tested with version v22.14.0 & v22.8.0)
 Generates HTML and assets and places them into a `dist` folder.
 
 `npm run build`
+
+### Generating API Documentation
+
+The TypeScript source is documented with [JSDoc](https://jsdoc.app/) comments, and [TypeDoc](https://typedoc.org/) generates an HTML reference from them.
+
+`npm run docs`
+
+This writes the generated documentation into a `docs` folder (a build artifact, not committed to the repository).

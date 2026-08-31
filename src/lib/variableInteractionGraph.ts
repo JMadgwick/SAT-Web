@@ -1,5 +1,13 @@
 import cytoscape from 'cytoscape'
 
+/**
+ * Convert a set of clauses into Cytoscape elements for the variable interaction graph.
+ *
+ * Creates a node for each variable and an edge between any two variables that
+ * appear together in a clause, giving a visual of which variables interact.
+ * @param clauses The clauses as arrays of literals.
+ * @returns The Cytoscape element definitions (nodes and edges) for the interaction graph.
+ */
 export default function process(clauses: number[][]){
     // Get a list of all variables (ie without sign)
     let uniqueVariables: number[] = []

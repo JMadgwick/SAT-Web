@@ -1,26 +1,55 @@
 import { solver, type eventType } from "./solver"
+
+/**
+ * A DPLL (Davis–Putnam–Logemann–Loveland) SAT solver.
+ *
+ * Extends the base {@link solver} with the full DPLL search: pure literal
+ * elimination, unit propagation, decision assignments, and backtracking. The
+ * solver is driven step by step via {@link solver.solveStep}; each step
+ * performs one of the DPLL stages and emits the corresponding
+ * {@link eventType events}.
+ */
 export class DPLLSolver extends solver{
+  /** History of the remaining clauses; each entry is the clause list after one step. */
   protected remainingClausesHistory: number[][][] = [] // Clause history
+  /** The order in which variables have been assigned. Used for backtracking. */
   protected variableAssignmentOrder: number[] = [] // Stores the order/history of variables which have been assigned in 'applyAssign'. Used for backtracking.
+  /** The set of variable assignments that led to a conflict, if any. */
   protected lastFailedVariableAssignments:Map<number,boolean|undefined> = new Map // Variable history for failed assignment
+  /** The kind of step to perform next; initially `dpll`. */
   protected nextStepType = "dpll" // Next step type, initially dpll
 
   // Statistics
+  /** The number of decision assignments made. */
   public decisionCount = 0
+  /** The number of backtracks performed. */
   public backtrackCount = 0
+  /** The number of pure literals eliminated. */
   public pureLiteralEliminationCount = 0
+  /** The number of unit propagations performed. */
   public unitPropagationCount = 0
 
 
+  /**
+   * Create a new DPLL solver for the given DIMACS CNF problem.
+   * @param dimacs The DIMACS CNF text to solve.
+   */
   public constructor(dimacs: string) {
     super(dimacs)
   }
 
+  /**
+   * Initialise the DPLL solver's clause history after the problem has been parsed.
+   */
   protected setup() {
     super.setup()
     this.remainingClausesHistory.push(this.originalProblemClauses)
   }
 
+  /**
+   * Get the current variable assignments.
+   * @returns The failed assignment set if one is pending, otherwise the latest assignment map.
+   */
   public getAssignments(){
     if (this.lastFailedVariableAssignments.size!=0) {
       return this.lastFailedVariableAssignments
@@ -29,18 +58,34 @@ export class DPLLSolver extends solver{
     }
   }
 
+  /**
+   * Get the number of variables not yet assigned.
+   * @returns The count of remaining (unassigned) variables.
+   */
   public getRemainingVariableCount():number {
     return (this.variableAssignmentsHistory.at(0)!.size - this.getAssignments().size)
   }
 
+  /**
+   * Get the number of clauses remaining at the current point in the search.
+   * @returns The count of remaining clauses.
+   */
   public getRemainingClauseCount():number {
     return (this.originalProblemClauses.length - (this.originalProblemClauses.length - this.remainingClausesHistory.at(-1)!.length))
   }
 
+  /**
+   * Get the clauses remaining at the current point in the search.
+   * @returns The remaining clauses as arrays of literals.
+   */
   public getCurrentClauses() {
     return this.remainingClausesHistory.at(-1)!
   }
 
+  /**
+   * Perform a single step of the DPLL search, dispatching to the appropriate stage.
+   * @returns The events produced by this step.
+   */
   protected solveOneStep():eventType[] {
     switch (this.nextStepType) {
       case "dpll":
@@ -57,6 +102,10 @@ export class DPLLSolver extends solver{
     }
   }
 
+  /**
+   * Run the DPLL simplification stages: pure literal elimination followed by unit propagation.
+   * @returns The events produced by the simplification stages.
+   */
   protected runDPLL():eventType[] {
     let dpllEvents:eventType[] = [] // Stores events generated during this step
 
@@ -81,6 +130,10 @@ export class DPLLSolver extends solver{
     return dpllEvents
   }
 
+  /**
+   * Perform a decision assignment: choose a variable, assign it, and simplify the clauses.
+   * @returns The events produced by this assignment step.
+   */
   protected doAssign():eventType[] {
     this.decisionCount++
     let assignEvents:eventType[] = [] // Stores events generated during this step
@@ -151,6 +204,10 @@ export class DPLLSolver extends solver{
     return assignEvents
   }
 
+  /**
+   * Backtrack to the previous decision point, undoing assignments until a variable with an untried value is found.
+   * @returns The events produced by this backtracking step.
+   */
   protected doBacktrack():eventType[] {
     let backtrackCount = 0 // Stores a count for number of backtrack events performed during this step
     while (this.variableAssignmentOrder.length > 0) { // While previously assigned variables exist to backtrack to
@@ -169,6 +226,15 @@ export class DPLLSolver extends solver{
     return [{ type: "UNSAT" }]
   }
 
+  /**
+   * Run one pass of pure literal elimination.
+   *
+   * Finds literals that appear only in one polarity, assigns them, and removes
+   * the clauses they satisfy.
+   * @param allPureAssignments Accumulates the pure literal assignments across passes.
+   * @param dpllEvents The events array to append to.
+   * @returns `true` if further passes are needed, `false` if elimination is complete.
+   */
   protected runPureLiteralElimination(allPureAssignments:Map<number,boolean>, dpllEvents:eventType[]):boolean {
     let allLiterals: Set<number> = new Set
     let pureLiterals: Array<number> = new Array
@@ -225,6 +291,15 @@ export class DPLLSolver extends solver{
     return true
   }
 
+  /**
+   * Run one pass of unit propagation.
+   *
+   * Finds unit clauses, assigns their literals, and simplifies the remaining
+   * clauses. Detects conflicts (a literal and its negation both unit).
+   * @param dpll An object holding the accumulated unit assignments and the clauses being simplified.
+   * @param dpllEvents The events array to append to.
+   * @returns `true` if further passes are needed, `false` if propagation is complete.
+   */
   protected runUnitPropagation(dpll:{allUnitLiteralAssignments:Map<number,boolean>; clausesForUnitPropagationElimination:number[][]}, dpllEvents:eventType[]):boolean {
     let unitLiterals: Set<number> = new Set // Set to store each unit literal only once
     
@@ -307,6 +382,13 @@ export class DPLLSolver extends solver{
     // Return true to indicate that Unit Propagation can be run again
     return true
   }
+  /**
+   * Handle a conflict detected during unit propagation.
+   *
+   * Marks the current assignment set as failed and decides whether to retry
+   * with the opposite value or to backtrack.
+   * @param dpllEvents The events array to append to.
+   */
   private handleUnitPropagationFailure(dpllEvents:eventType[]) {
     let previouslyAssignedVariable = this.variableAssignmentOrder.at(-1) // Get the last assigned variable, or undefined if there isn't one
     if (previouslyAssignedVariable == undefined) { // If no variables have been assigned then we are at the root node and the problem is UNSAT

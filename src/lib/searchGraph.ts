@@ -1,6 +1,15 @@
 import {type eventType} from "./solver"
 import cytoscape from 'cytoscape'
 
+/**
+ * Convert a solver's event log into Cytoscape elements for the search tree.
+ *
+ * Walks the {@link eventType events} in order, building nodes and edges that
+ * represent the search tree: assignment nodes, DPLL simplification nodes,
+ * failure nodes, and the final solved/unsolved state.
+ * @param events The solver's accumulated event log.
+ * @returns The Cytoscape element definitions (nodes and edges) for the search tree.
+ */
 export default function process(events: eventType[]):cytoscape.ElementDefinition[] {
     let assignmentTree: string[] = [] // History of assignments used to track node id for backtracking
     let count = 100 // Provides a unique id for nodes
@@ -59,6 +68,11 @@ export default function process(events: eventType[]):cytoscape.ElementDefinition
     return elements
 }
 
+/**
+ * Format a variable assignment map as a display string for a DPLL node label.
+ * @param unitVariableAssignments The variable assignments to display.
+ * @returns A string of the assignments, with negations shown as a negation symbol.
+ */
 function processVariableAssignmentMap(unitVariableAssignments:Map<number,boolean>):string {
     let eventText = ""
     for (const [literal, assignment] of unitVariableAssignments.entries()) {
@@ -67,6 +81,11 @@ function processVariableAssignmentMap(unitVariableAssignments:Map<number,boolean
     return eventText.slice(0,-2)
 }
 
+/**
+ * Convert a number into its Unicode subscript representation.
+ * @param numberToConvert The number to convert.
+ * @returns The number rendered with subscript digits.
+ */
 function toSubscript(numberToConvert:number){
     let newText = ""
     for (let char of numberToConvert.toString()){
